@@ -21,11 +21,11 @@ type Logger struct {
 	initialized bool;
 }
 
-const LogLevelV = 1;
-const LogLevelD = 2;
-const LogLevelI = 4;
-const LogLevelW = 8;
-const LogLevelE = 16;
+const LogLevelE = 1;
+const LogLevelW = 3;
+const LogLevelI = 7;
+const LogLevelD = 15;
+const LogLevelV = 31;
 
 const logTypeV = `V: `;
 const logTypeD = `D: `;
@@ -56,7 +56,7 @@ func ChangeLogLevel(logLevel int) {
 func LogV(content string) {
 	LogInit();
 	
-	if gLogger.LogLevel & LogLevelV == LogLevelV {
+	if (gLogger.LogLevel & LogLevelV) == LogLevelV {
 		var logBuffer StringBuilder;
 		logBuffer.Append(logTypeV).Append(content);
 		log.Println(logBuffer.String());
@@ -66,7 +66,7 @@ func LogV(content string) {
 func LogD(content string) {
 	LogInit();
 	
-	if gLogger.LogLevel & LogLevelD == LogLevelD {
+	if (gLogger.LogLevel & LogLevelD) == LogLevelD {
 		var logBuffer StringBuilder;
 		logBuffer.Append(logTypeD).Append(content);
 		log.Println(logBuffer.String());
@@ -76,7 +76,7 @@ func LogD(content string) {
 func LogI(content string) {
 	LogInit();
 
-	if gLogger.LogLevel & LogLevelI == LogLevelI {
+	if (gLogger.LogLevel & LogLevelI) == LogLevelI {
 		var logBuffer StringBuilder;
 		logBuffer.Append(logTypeI).Append(content);
 		log.Println(logBuffer.String());
@@ -86,7 +86,7 @@ func LogI(content string) {
 func LogW(content string) {
 	LogInit();
 	
-	if gLogger.LogLevel & LogLevelW == LogLevelW {
+	if (gLogger.LogLevel & LogLevelW) == LogLevelW {
 		var logBuffer StringBuilder;
 		logBuffer.Append(logTypeW).Append(content);
 		log.Println(logBuffer.String());
@@ -122,7 +122,7 @@ func (this Logger) ChangeLogLevel(logLevel int) {
 func (this Logger) LogV(content string) {
 	this.logInit();
 	
-	if this.LogLevel & LogLevelV == LogLevelV {
+	if (this.LogLevel & LogLevelV) == LogLevelV {
 		var logBuffer StringBuilder;
 		logBuffer.Append(logTypeV).Append(content);
 		log.Println(logBuffer.String());
@@ -132,7 +132,7 @@ func (this Logger) LogV(content string) {
 func (this Logger) LogD(content string) {
 	this.logInit();
 	
-	if this.LogLevel & LogLevelD == LogLevelD {
+	if (this.LogLevel & LogLevelD) == LogLevelD {
 		var logBuffer StringBuilder;
 		logBuffer.Append(logTypeD).Append(content);
 		log.Println(logBuffer.String());
@@ -142,7 +142,7 @@ func (this Logger) LogD(content string) {
 func (this Logger) LogI(content string) {
 	this.logInit();
 	
-	if this.LogLevel & LogLevelI == LogLevelI {
+	if (this.LogLevel & LogLevelI) == LogLevelI {
 		var logBuffer StringBuilder;
 		logBuffer.Append(logTypeI).Append(content);
 		log.Println(logBuffer.String());
@@ -152,7 +152,7 @@ func (this Logger) LogI(content string) {
 func (this Logger) LogW(content string) {
 	this.logInit();
 	
-	if this.LogLevel & LogLevelW == LogLevelW {
+	if (this.LogLevel & LogLevelW) == LogLevelW {
 		var logBuffer StringBuilder;
 		logBuffer.Append(logTypeW).Append(content);
 		log.Println(logBuffer.String());
@@ -162,7 +162,7 @@ func (this Logger) LogW(content string) {
 func (this Logger) LogE(content string) {
 	this.logInit();
 	
-	if this.LogLevel & LogLevelE == LogLevelE {
+	if (this.LogLevel & LogLevelE) == LogLevelE {
 		var logBuffer StringBuilder;
 		logBuffer.Append(logTypeE).Append(content);
 		log.Println(logBuffer.String());
