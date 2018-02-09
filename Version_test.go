@@ -7,7 +7,7 @@ import (
 )
 
 func TestVersion(t *testing.T) {
-	var version = `v1.0.0` // TODO 変更する度に更新すること
+	var version = `v1.2.0` // TODO 変更する度に更新すること
 	var versionSep []string = strings.Split(version, `.`)
 	versionMajorCode, _ := strconv.Atoi(strings.Replace(versionSep[0], `v`, ``, -1))
 	versionMinorCode, _ := strconv.Atoi(versionSep[1])
@@ -25,7 +25,7 @@ func TestVersion(t *testing.T) {
 		t.Error(`minor code is not matched`)
 	}
 
-	if VersionMinorCode() != versionRevisionCode {
+	if VersionRevisionCode() != versionRevisionCode {
 		t.Error(`revision code is not matched`)
 	}
 }

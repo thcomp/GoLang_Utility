@@ -48,5 +48,32 @@ func CamelToSnakeCase(text string) string {
 	}
 
 	return ret
+}
 
+func ToLowerFirst(text string) string {
+	var ret = text
+
+	byteArray := []byte(text)
+	if len(byteArray) > 0 {
+		if byteArray[0] >= 65 && byteArray[0] <= 90 {
+			byteArray[0] += 32
+		}
+		ret = string(byteArray)
+	}
+
+	return ret
+}
+
+func ToUpperFirst(text string) string {
+	var ret = text
+
+	byteArray := []byte(text)
+	if len(byteArray) > 0 {
+		if byteArray[0] >= 97 && byteArray[0] <= 122 {
+			byteArray[0] -= 32
+		}
+		ret = string(byteArray)
+	}
+
+	return ret
 }
