@@ -9,6 +9,7 @@ var EnableDebug bool = true
 
 type StringBuilderIF interface {
 	Append(text string) StringBuilder
+	AppendByte(text byte) StringBuilder
 	Delete()
 	String() string
 	Length() int
@@ -25,6 +26,15 @@ func (this *StringBuilder) Append(text string) *StringBuilder {
 	}
 
 	this.mBuffer.WriteString(text)
+	return this
+}
+
+func (this *StringBuilder) AppendByte(text byte) *StringBuilder {
+	if this.mBuffer == nil {
+		this.mBuffer = bytes.NewBufferString("")
+	}
+
+	this.mBuffer.WriteByte(text)
 	return this
 }
 
