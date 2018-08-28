@@ -2,38 +2,49 @@ package utility
 
 import (
 	//"strconv"
+	"errors"
+	"reflect"
+	"strings"
 	"testing"
 	//"time"
 )
 
+type SmallData struct {
+	Value0 int32
+}
+
+type Data struct {
+	Value0 int32
+	Value1 float32
+	Value2 float64
+	Value3 string
+}
+
+type LargeData struct {
+	Value0  int32
+	Value1  float32
+	Value2  float64
+	Value3  string
+	Value4  bool
+	Value5  int8
+	Value6  int16
+	Value7  int64
+	Value8  uint8
+	Value9  uint16
+	Value10 uint32
+	Value11 uint64
+	Value12 SmallData
+}
+
+type DataIf interface {
+	FuncA(valueI int, valueS string) (int, error)
+}
+
+func (this *SmallData) FuncA(valueI int, valueS string) (int, error) {
+	return valueI, errors.New(valueS)
+}
+
 func TestReflectHelper(t *testing.T) {
-	type SmallData struct {
-		Value0 int32
-	}
-
-	type Data struct {
-		Value0 int32
-		Value1 float32
-		Value2 float64
-		Value3 string
-	}
-
-	type LargeData struct {
-		Value0  int32
-		Value1  float32
-		Value2  float64
-		Value3  string
-		Value4  bool
-		Value5  int8
-		Value6  int16
-		Value7  int64
-		Value8  uint8
-		Value9  uint16
-		Value10 uint32
-		Value11 uint64
-		Value12 SmallData
-	}
-
 	var smallData SmallData
 	var data Data
 	var largeData LargeData
@@ -746,6 +757,20 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsUint64 is failed`)
 			}
 			break
+		}
+	}
+
+	// Method Call
+	results := refHelperForSmall.Call("FuncA", []reflect.Value{reflect.ValueOf(9999), reflect.ValueOf(`kore`)})
+	if len(results) != 2 {
+		t.Error(`result length not matched`)
+	} else if results[0].Int() != 9999 {
+		t.Error(`result[0] not matched`)
+	} else {
+		if callError, castOK := results[1].Interface().(error); !castOK {
+			t.Error(`result[1] not error`)
+		} else if strings.Compare(callError.Error(), `kore`) != 0 {
+			t.Error(`result[1] not matched: kore`)
 		}
 	}
 }

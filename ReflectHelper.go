@@ -38,6 +38,7 @@ type ReflectHelperIF interface {
 	GetByIndex(index int) interface{}
 
 	FindByName(name string) bool
+	Call(methodName string, values []reflect.Value) []reflect.Value
 }
 
 func NewReflectHelper(targetInterface interface{}) *ReflectHelper {
@@ -185,6 +186,10 @@ func (this *ReflectHelper) GetByName(name string) interface{} {
 
 func (this *ReflectHelper) GetByIndex(index int) interface{} {
 	return this.mTargetValue.Field(index).Interface()
+}
+
+func (this *ReflectHelper) Call(methodName string, values []reflect.Value) []reflect.Value {
+	return reflect.ValueOf(this.mTargetInterface).MethodByName(methodName).Call(values)
 }
 
 func (this *ReflectHelper) CanSet(name string, value interface{}) bool {
