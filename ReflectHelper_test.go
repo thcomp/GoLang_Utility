@@ -15,7 +15,7 @@ type SmallData struct {
 
 type Data struct {
 	Value0 int32
-	Value1 float32
+	Value1 float32 `json:"value1"`
 	Value2 float64
 	Value3 string
 }
@@ -772,5 +772,11 @@ func TestReflectHelper(t *testing.T) {
 		} else if strings.Compare(callError.Error(), `kore`) != 0 {
 			t.Error(`result[1] not matched: kore`)
 		}
+	}
+
+	// get field by tag name
+	targetField := refHelper.GetByTagName(`json`, `value1`)
+	if targetField == nil {
+		t.Error(`not found field by GetByTagName`)
 	}
 }

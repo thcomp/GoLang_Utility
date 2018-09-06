@@ -3,6 +3,7 @@ package utility
 import (
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 type ReflectHelper struct {
@@ -35,6 +36,7 @@ type ReflectHelperIF interface {
 	SetByName(name string, value interface{})
 	SetByIndex(index int, value interface{})
 	GetByName(name string) interface{}
+	GetByTagName(key string, name string) interface{}
 	GetByIndex(index int) interface{}
 
 	FindByName(name string) bool
@@ -62,7 +64,11 @@ func (this *ReflectHelper) Name(index int) string {
 }
 
 func (this *ReflectHelper) Tag(index int) reflect.StructTag {
-	return reflect.TypeOf(this.mTargetInterface).Field(index).Tag
+	if reflect.TypeOf(this.mTargetInterface).Kind() == reflect.Ptr {
+		return reflect.TypeOf(this.mTargetInterface).Elem().Field(index).Tag
+	} else {
+		return reflect.TypeOf(this.mTargetValue).Field(index).Tag
+	}
 }
 
 func (this *ReflectHelper) BoolValue(index int) bool {
@@ -182,6 +188,22 @@ func (this *ReflectHelper) SetByIndex(index int, value interface{}) bool {
 
 func (this *ReflectHelper) GetByName(name string) interface{} {
 	return this.mTargetValue.FieldByName(name).Interface()
+}
+
+func (this *ReflectHelper) GetByTagName(key string, name string) interface{} {
+	var ret interface{} = nil
+
+	for i := 0; i < this.NumField(); i++ {
+		tagData := this.Tag(i)
+		if tempName, exist := tagData.Lookup(key); exist {
+			if strings.Compare(name, tempName) == 0 {
+				ret = this.GetByIndex(i)
+				break
+			}
+		}
+	}
+
+	return ret
 }
 
 func (this *ReflectHelper) GetByIndex(index int) interface{} {
