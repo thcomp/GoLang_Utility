@@ -166,7 +166,7 @@ func (this *ReflectHelper) SetByName(name string, value interface{}) bool {
 	var ret bool = false
 	var tempValue reflect.Value = this.mTargetValue.FieldByName(name)
 
-	if tempValue.CanSet() {
+	if tempValue.Kind() == reflect.ValueOf(value).Kind() {
 		tempValue.Set(reflect.ValueOf(value))
 		ret = true
 	}
@@ -187,7 +187,14 @@ func (this *ReflectHelper) SetByIndex(index int, value interface{}) bool {
 }
 
 func (this *ReflectHelper) GetByName(name string) interface{} {
-	return this.mTargetValue.FieldByName(name).Interface()
+	var ret interface{} = nil
+
+	tempValue := this.mTargetValue.FieldByName(name)
+	if tempValue.IsValid() {
+		ret = tempValue.Interface()
+	}
+
+	return ret
 }
 
 func (this *ReflectHelper) GetByTagName(key string, name string) interface{} {
