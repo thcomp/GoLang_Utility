@@ -5,7 +5,7 @@ import (
 )
 
 const versionMajorCode = 1
-const versionMinorCode = 5
+const versionMinorCode = 6
 const versionRevisionCode = 0
 
 var version string
