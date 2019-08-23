@@ -51,19 +51,24 @@ func IsDir(path string) bool {
 	return ret
 }
 
-func GetFiles(path string, allowExtensions []string) []string {
+func GetFilesV(path string, allowExtensions ...string) []string {
 	var ret []string = make([]string, 0)
 
 	if target, openErr := os.Open(path); openErr == nil {
 		defer target.Close()
 
 		allowExtensionMap := map[string]bool{}
-		for _, extension := range allowExtensions {
-			lowerExtension := strings.ToLower(extension)
-			if !strings.HasPrefix(lowerExtension, `.`) {
-				lowerExtension = `.` + lowerExtension
+
+		if allowExtensions == nil || len(allowExtensions) == 0 {
+			// allow all extension
+		} else {
+			for _, extension := range allowExtensions {
+				lowerExtension := strings.ToLower(extension)
+				if !strings.HasPrefix(lowerExtension, `.`) {
+					lowerExtension = `.` + lowerExtension
+				}
+				allowExtensionMap[lowerExtension] = true
 			}
-			allowExtensionMap[lowerExtension] = true
 		}
 
 		childElements := getFilesSub(target, allowExtensionMap)
@@ -72,6 +77,18 @@ func GetFiles(path string, allowExtensions []string) []string {
 				ret = append(ret, childElement)
 			}
 		}
+	}
+
+	return ret
+}
+
+func GetFiles(path string, allowExtensions []string) []string {
+	var ret []string
+
+	if allowExtensions == nil {
+		ret = GetFilesV(path)
+	} else {
+		ret = GetFilesV(path, allowExtensions...)
 	}
 
 	return ret
@@ -97,14 +114,26 @@ func getFilesSub(target *os.File, allowExtensionMap map[string]bool) []string {
 				}
 			} else {
 				lowerExt := strings.ToLower(path.Ext(target.Name()))
-				if value, exist := allowExtensionMap[lowerExt]; exist && value {
+
+				if len(allowExtensionMap) == 0 {
+					// allow all extension
 					ret = append(ret, target.Name())
+				} else {
+					if value, exist := allowExtensionMap[lowerExt]; exist && value {
+						ret = append(ret, target.Name())
+					}
 				}
 			}
 		} else {
 			lowerExt := strings.ToLower(path.Ext(target.Name()))
-			if value, exist := allowExtensionMap[lowerExt]; exist && value {
+
+			if len(allowExtensionMap) == 0 {
+				// allow all extension
 				ret = append(ret, target.Name())
+			} else {
+				if value, exist := allowExtensionMap[lowerExt]; exist && value {
+					ret = append(ret, target.Name())
+				}
 			}
 		}
 	}
