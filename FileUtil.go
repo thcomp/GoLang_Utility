@@ -159,3 +159,27 @@ func ChangeExtension(path string, newExtension string) string {
 
 	return ret
 }
+
+func AppendSuffix(path, suffix string) string {
+	var ret = path
+
+	if extension := filepath.Ext(path); len(extension) > 0 {
+		ret = ret[0:len(path)-len(extension)] + suffix + extension
+	} else {
+		ret = ret + suffix
+	}
+
+	return ret
+}
+
+func AppendPrefix(path, prefix string) string {
+	var ret = path
+
+	if base := filepath.Base(path); len(base) > 0 {
+		ret = ret[0:len(path)-len(base)] + prefix + base
+	} else {
+		ret = prefix + ret
+	}
+
+	return ret
+}
