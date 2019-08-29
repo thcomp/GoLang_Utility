@@ -164,3 +164,57 @@ func Test_GetFiles(t *testing.T) {
 		t.Fatalf("file count not matched: %d vs %d\n", 1, len(files))
 	}
 }
+
+func Test_AppendSuffix(t *testing.T) {
+	testDataArray := []string{
+		"/var/www/html/index.html",
+		"index.html",
+		"./index.html",
+		"../html/index.html",
+		"c:\\var\\www\\html\\index.html",
+		".\\index.html",
+		"..\\html\\index.html",
+	}
+	expectDataArray := []string{
+		"/var/www/html/index_suffiX.html",
+		"index_suffiX.html",
+		"./index_suffiX.html",
+		"../html/index_suffiX.html",
+		"c:\\var\\www\\html\\index_suffiX.html",
+		".\\index_suffiX.html",
+		"..\\html\\index_suffiX.html",
+	}
+
+	for pos := range testDataArray {
+		if AppendSuffix(testDataArray[pos], "_suffiX") != expectDataArray[pos] {
+			t.Fatalf("not matched: %s vs %s", AppendSuffix(testDataArray[pos], "_suffiX"), expectDataArray[pos])
+		}
+	}
+}
+
+func Test_AppendPrefix(t *testing.T) {
+	testDataArray := []string{
+		"/var/www/html/index.html",
+		"index.html",
+		"./index.html",
+		"../html/index.html",
+		"c:\\var\\www\\html\\index.html",
+		".\\index.html",
+		"..\\html\\index.html",
+	}
+	expectDataArray := []string{
+		"/var/www/html/preFix_index.html",
+		"preFix_index.html",
+		"./preFix_index.html",
+		"../html/preFix_index.html",
+		"c:\\var\\www\\html\\preFix_index.html",
+		".\\preFix_index.html",
+		"..\\html\\preFix_index.html",
+	}
+
+	for pos := range testDataArray {
+		if AppendPrefix(testDataArray[pos], "preFix_") != expectDataArray[pos] {
+			t.Fatalf("not matched: %s vs %s", AppendPrefix(testDataArray[pos], "preFix_"), expectDataArray[pos])
+		}
+	}
+}
