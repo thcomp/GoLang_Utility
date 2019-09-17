@@ -2,6 +2,7 @@ package utility
 
 import (
 	"os"
+	"path"
 	"testing"
 )
 
@@ -215,6 +216,54 @@ func Test_AppendPrefix(t *testing.T) {
 	for pos := range testDataArray {
 		if AppendPrefix(testDataArray[pos], "preFix_") != expectDataArray[pos] {
 			t.Fatalf("not matched: %s vs %s", AppendPrefix(testDataArray[pos], "preFix_"), expectDataArray[pos])
+		}
+	}
+}
+
+func TestExt(t *testing.T) {
+	testDataArray := []string{
+		"/var/www/html/index.html",
+		"index.html",
+		"./index.html",
+		"../html/index.html",
+		"c:\\var\\www\\html\\index.html",
+		".\\index.html",
+		"..\\html\\index.html",
+		"..\\html\\index",
+	}
+	expectDataArray := []string{
+		".html",
+		".html",
+		".html",
+		".html",
+		".html",
+		".html",
+		".html",
+		".\\html\\index",
+	}
+
+	for pos := range testDataArray {
+		t.Logf("%s -> %s\n", testDataArray[pos], path.Ext(testDataArray[pos]))
+
+		if path.Ext(testDataArray[pos]) != expectDataArray[pos] {
+			t.Fatalf("not matched: %s vs %s\n", path.Ext(testDataArray[pos]), expectDataArray[pos])
+		}
+	}
+}
+
+func Test_GetMIMETypeFromExtension(t *testing.T) {
+	testDataArray := []string{
+		"/var/www/html/image.png",
+		"test.pdf",
+	}
+	expectDataArray := []string{
+		"image/png",
+		"application/pdf",
+	}
+
+	for pos := range testDataArray {
+		if GetMIMETypeFromExtension(testDataArray[pos]) != expectDataArray[pos] {
+			t.Fatalf("not matched: %s vs %s\n", GetMIMETypeFromExtension(testDataArray[pos]), expectDataArray[pos])
 		}
 	}
 }
