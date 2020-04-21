@@ -28,6 +28,15 @@ func NewConfigHelper(configData interface{}, configFilePath string) *ConfigHelpe
 func (helper *ConfigHelper) ExpandConfigData() error {
 	var ret error = nil
 
+	ret, _ = helper.ExpandConfigData2()
+
+	return ret
+}
+
+func (helper *ConfigHelper) ExpandConfigData2() (error, bool) {
+	var ret error = nil
+	var modified = false
+
 	if helper.isCreatedByFunc {
 		if configFileStat, statError := os.Stat(helper.configFilePath); statError == nil {
 			var currentConfigFileTimeUt int64 = configFileStat.ModTime().Unix()
@@ -37,6 +46,8 @@ func (helper *ConfigHelper) ExpandConfigData() error {
 				if jsonBytes, readFileErr := ioutil.ReadFile(helper.configFilePath); readFileErr == nil {
 					if unmarshalErr := json.Unmarshal(jsonBytes, &helper.configData); unmarshalErr != nil {
 						LogE(unmarshalErr.Error())
+					} else {
+						modified = true
 					}
 				} else {
 					LogE(readFileErr.Error())
@@ -49,5 +60,5 @@ func (helper *ConfigHelper) ExpandConfigData() error {
 		ret = errors.New(`helper is not created by NewConfigHelper`)
 	}
 
-	return ret
+	return ret, modified
 }
