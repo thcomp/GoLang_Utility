@@ -263,6 +263,7 @@ func AppendPrefix(path, prefix string) string {
 func GetMIMETypeFromExtension(filePath string) string {
 	ret := ""
 	extension := path.Ext(filePath)
+	extension = strings.ToLower(extension)
 
 	if mime, exit := sExtensionMIMEMap[extension]; exit {
 		ret = mime
