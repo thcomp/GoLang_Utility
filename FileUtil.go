@@ -40,6 +40,7 @@ var sExtensionMIMEMap map[string]string = map[string]string{
 	".midi":   "audio/x-midi",
 	".mjs":    "text/javascript",
 	".mp3":    "audio/mpeg",
+	".mp4":    "video/mpeg",
 	".mpeg":   "video/mpeg",
 	".mpkg":   "application/vnd.apple.installer+xml",
 	".odp":    "application/vnd.oasis.opendocument.presentation",
