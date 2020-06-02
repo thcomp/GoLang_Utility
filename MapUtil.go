@@ -84,6 +84,8 @@ func GetNumber(mapObject interface{}, key interface{}) (float64, error) {
 				ret = float64(tempValue)
 			} else if tempValue, assertionOK := tempRet.(uint); assertionOK {
 				ret = float64(tempValue)
+			} else {
+				retErr = fmt.Errorf("value is not Number type: %v", reflect.TypeOf(tempRet))
 			}
 		}
 	}
@@ -99,6 +101,8 @@ func GetString(mapObject interface{}, key interface{}) (string, error) {
 	if tempRet, retErr = GetInterface(mapObject, key); retErr == nil {
 		if tempValue, assertionOK := tempRet.(string); assertionOK {
 			ret = tempValue
+		} else {
+			retErr = fmt.Errorf("value is not string type: %v", reflect.TypeOf(tempRet))
 		}
 	}
 
