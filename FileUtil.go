@@ -39,6 +39,7 @@ var sExtensionMIMEMap map[string]string = map[string]string{
 	".mid":    "audio/x-midi",
 	".midi":   "audio/x-midi",
 	".mjs":    "text/javascript",
+	".mov":    "video/quicktime",
 	".mp3":    "audio/mpeg",
 	".mp4":    "video/mpeg",
 	".mpeg":   "video/mpeg",
