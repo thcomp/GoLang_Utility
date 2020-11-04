@@ -94,7 +94,7 @@ func NewMultipartHelper(reader io.Reader, boundary string) (*MultipartHelper, er
 						index = index + 1
 						sameFormNameIndicateMap[formName] = index
 
-						formName = fmt.Sprintf("%s[%d]", formName[0:len(formName)-len("[]")-1], index)
+						formName = fmt.Sprintf("%s[%d]", formName[0:len(formName)-len("[]")], index)
 					}
 
 					ret.formDataMap[formName] = &FormData{
