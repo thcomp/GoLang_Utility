@@ -66,9 +66,7 @@ func LogV(content string) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelV) == LogLevelV {
-		var logBuffer StringBuilder
-		logBuffer.Append(logTypeV).Append(content)
-		log.Println(logBuffer.String())
+		log.Println(logTypeV + content)
 	}
 }
 
@@ -76,9 +74,7 @@ func LogD(content string) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelD) == LogLevelD {
-		var logBuffer StringBuilder
-		logBuffer.Append(logTypeD).Append(content)
-		log.Println(logBuffer.String())
+		log.Println(logTypeD + content)
 	}
 }
 
@@ -86,9 +82,7 @@ func LogI(content string) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelI) == LogLevelI {
-		var logBuffer StringBuilder
-		logBuffer.Append(logTypeI).Append(content)
-		log.Println(logBuffer.String())
+		log.Println(logTypeI + content)
 	}
 }
 
@@ -96,9 +90,7 @@ func LogW(content string) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelW) == LogLevelW {
-		var logBuffer StringBuilder
-		logBuffer.Append(logTypeW).Append(content)
-		log.Println(logBuffer.String())
+		log.Println(logTypeW + content)
 	}
 }
 
@@ -106,9 +98,47 @@ func LogE(content string) {
 	LogInit()
 
 	if gLogger.LogLevel&LogLevelE == LogLevelE {
-		var logBuffer StringBuilder
-		logBuffer.Append(logTypeE).Append(content)
-		log.Println(logBuffer.String())
+		log.Println(logTypeE + content)
+	}
+}
+
+func LogfV(format string, args ...interface{}) {
+	LogInit()
+
+	if (gLogger.LogLevel & LogLevelV) == LogLevelV {
+		log.Printf(logTypeV+format+"\n", args...)
+	}
+}
+
+func LogfD(format string, args ...interface{}) {
+	LogInit()
+
+	if (gLogger.LogLevel & LogLevelD) == LogLevelD {
+		log.Printf(logTypeD+format+"\n", args...)
+	}
+}
+
+func LogfI(format string, args ...interface{}) {
+	LogInit()
+
+	if (gLogger.LogLevel & LogLevelI) == LogLevelI {
+		log.Printf(logTypeI+format+"\n", args...)
+	}
+}
+
+func LogfW(format string, args ...interface{}) {
+	LogInit()
+
+	if (gLogger.LogLevel & LogLevelW) == LogLevelW {
+		log.Printf(logTypeW+format+"\n", args...)
+	}
+}
+
+func LogfE(format string, args ...interface{}) {
+	LogInit()
+
+	if gLogger.LogLevel&LogLevelE == LogLevelE {
+		log.Printf(logTypeE+format+"\n", args...)
 	}
 }
 
@@ -159,9 +189,7 @@ func (this Logger) LogV(content string) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelV) == LogLevelV {
-		var logBuffer StringBuilder
-		logBuffer.Append(logTypeV).Append(content)
-		log.Println(logBuffer.String())
+		log.Println(logTypeV + content)
 	}
 }
 
@@ -169,9 +197,7 @@ func (this Logger) LogD(content string) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelD) == LogLevelD {
-		var logBuffer StringBuilder
-		logBuffer.Append(logTypeD).Append(content)
-		log.Println(logBuffer.String())
+		log.Println(logTypeD + content)
 	}
 }
 
@@ -179,9 +205,7 @@ func (this Logger) LogI(content string) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelI) == LogLevelI {
-		var logBuffer StringBuilder
-		logBuffer.Append(logTypeI).Append(content)
-		log.Println(logBuffer.String())
+		log.Println(logTypeI + content)
 	}
 }
 
@@ -189,9 +213,7 @@ func (this Logger) LogW(content string) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelW) == LogLevelW {
-		var logBuffer StringBuilder
-		logBuffer.Append(logTypeW).Append(content)
-		log.Println(logBuffer.String())
+		log.Println(logTypeW + content)
 	}
 }
 
@@ -199,8 +221,46 @@ func (this Logger) LogE(content string) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelE) == LogLevelE {
-		var logBuffer StringBuilder
-		logBuffer.Append(logTypeE).Append(content)
-		log.Println(logBuffer.String())
+		log.Println(logTypeE + content)
+	}
+}
+
+func (this Logger) LogfV(format string, args ...interface{}) {
+	this.logInit()
+
+	if (this.LogLevel & LogLevelV) == LogLevelV {
+		log.Printf(logTypeV+format+"\n", args...)
+	}
+}
+
+func (this Logger) LogfD(format string, args ...interface{}) {
+	this.logInit()
+
+	if (this.LogLevel & LogLevelD) == LogLevelD {
+		log.Printf(logTypeD+format+"\n", args...)
+	}
+}
+
+func (this Logger) LogfI(format string, args ...interface{}) {
+	this.logInit()
+
+	if (this.LogLevel & LogLevelI) == LogLevelI {
+		log.Printf(logTypeI+format+"\n", args...)
+	}
+}
+
+func (this Logger) LogfW(format string, args ...interface{}) {
+	this.logInit()
+
+	if (this.LogLevel & LogLevelW) == LogLevelW {
+		log.Printf(logTypeW+format+"\n", args...)
+	}
+}
+
+func (this Logger) LogfE(format string, args ...interface{}) {
+	this.logInit()
+
+	if (this.LogLevel & LogLevelE) == LogLevelE {
+		log.Printf(logTypeE+format+"\n", args...)
 	}
 }

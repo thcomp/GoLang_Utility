@@ -3,6 +3,7 @@ package utility
 import (
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 )
 
@@ -264,6 +265,27 @@ func Test_GetMIMETypeFromExtension(t *testing.T) {
 	for pos := range testDataArray {
 		if GetMIMETypeFromExtension(testDataArray[pos]) != expectDataArray[pos] {
 			t.Fatalf("not matched: %s vs %s\n", GetMIMETypeFromExtension(testDataArray[pos]), expectDataArray[pos])
+		}
+	}
+}
+
+func TestGetParent(t *testing.T) {
+	var testPathMap map[string]string = map[string]string{
+		"/home/a/ss.text.txt":       "/home/a",
+		"ss.text.dat":               ".",
+		"./ss.text.Jpeg":            ".",
+		"../a/ss.text.png":          "../a",
+		"/ss.text.png":              ".",
+		"C:\\home\\a\\ss.text.a":    "C:\\home\\a",
+		".\\ss.text.bn":             ".",
+		"..\\a\\ss.text.koredemoii": "..\\a",
+		"C:\\ss.text.a":             "C:",
+		"\\ss.text.a":               ".",
+	}
+
+	for key, value := range testPathMap {
+		if GetParent(key) != value {
+			t.Fatalf("not matched: %s vs %s", filepath.Dir(key), value)
 		}
 	}
 }
