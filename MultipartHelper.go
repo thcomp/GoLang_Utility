@@ -13,7 +13,7 @@ import (
 	"github.com/rs/xid"
 )
 
-const c_TemporaryFolderPath = "multipart_helper" + string(os.PathSeparator)
+const c_TemporaryFolderPath = "." +  string(os.PathSeparator) + "multipart_helper" + string(os.PathSeparator)
 
 type FormData struct {
 	temporaryFilepath string
@@ -94,7 +94,7 @@ func NewMultipartHelper(reader io.Reader, boundary string) (*MultipartHelper, er
 						index = index + 1
 						sameFormNameIndicateMap[formName] = index
 
-						formName = fmt.Sprintf("%s[%d]", formName[0:len(formName)-len("[]")-1], index)
+						formName = fmt.Sprintf("%s[%d]", formName[0:len(formName)-len("[]")], index)
 					}
 
 					ret.formDataMap[formName] = &FormData{
