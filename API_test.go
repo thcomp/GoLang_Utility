@@ -3,6 +3,7 @@ package utility
 import (
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 )
 
@@ -65,3 +66,62 @@ func TestOsName(t *testing.T) {
 		}
 	}
 }
+
+func TestPathDir(t *testing.T) {
+	var testPathMap map[string]string = map[string]string{
+		"/home/a/ss.text.txt":       "/home/a",
+		"ss.text.dat":               ".",
+		"./ss.text.Jpeg":            ".",
+		"../a/ss.text.png":          "../a",
+		"C:\\home\\a\\ss.text.a":    "C:\\home\\a",
+		".\\ss.text.bn":             ".",
+		"..\\a\\ss.text.koredemoii": "..\\a",
+	}
+
+	for key, value := range testPathMap {
+		if path.Dir(key) != value {
+			t.Fatalf("not matched: %s vs %s", path.Dir(key), value)
+		}
+	}
+}
+
+func TestFilepathDir(t *testing.T) {
+	var testPathMap map[string]string = map[string]string{
+		"/home/a/ss.text.txt":       "/home/a",
+		"ss.text.dat":               ".",
+		"./ss.text.Jpeg":            ".",
+		"../a/ss.text.png":          "../a",
+		"C:\\home\\a\\ss.text.a":    "C:\\home\\a",
+		".\\ss.text.bn":             ".",
+		"..\\a\\ss.text.koredemoii": "..\\a",
+	}
+
+	for key, value := range testPathMap {
+		if filepath.Dir(key) != value {
+			t.Fatalf("not matched: %s vs %s", filepath.Dir(key), value)
+		}
+	}
+}
+
+// func Test(t *testing.T) {
+// 	var testPathMap map[string]string = map[string]string{
+// 		"/home/a/ss.text.txt":       "/home/a",
+// 		"ss.text.dat":               ".",
+// 		"./ss.text.Jpeg":            ".",
+// 		"../a/ss.text.png":          "../a",
+// 		"C:\\home\\a\\ss.text.a":    "C:\\home\\a",
+// 		".\\ss.text.bn":             ".",
+// 		"..\\a\\ss.text.koredemoii": "..\\a",
+// 	}
+
+// 	for key, value := range testPathMap {
+// 		if itemInfo, statErr := os.Stat(key); statErr == nil {
+// 			itemInfo.
+// 		} else {
+// 			t.Fatalf(statErr.Error())
+// 		}
+// 		if (key) != value {
+// 			t.Fatalf("not matched: %s vs %s", filepath.Dir(key), value)
+// 		}
+// 	}
+// }

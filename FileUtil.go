@@ -290,3 +290,33 @@ func GetMIMETypeFromExtension(filePath string) string {
 
 	return ret
 }
+
+func GetParent(itemPath string) string {
+	parent := ""
+	pathSeparators := []string{"\\", "/"}
+	foundIndex := -1
+	exist := false
+
+	for _, pathSeparator := range pathSeparators {
+		index := strings.LastIndex(itemPath, pathSeparator)
+		if index >= 0 {
+			foundIndex = index
+			exist = true
+			break
+		}
+	}
+
+	if exist {
+		parent = itemPath[0:foundIndex]
+		parent = strings.TrimLeft(parent, " \t")
+
+		if len(parent) == 0 {
+			parent = "."
+		}
+	} else {
+		// only file name
+		parent = "."
+	}
+
+	return parent
+}
