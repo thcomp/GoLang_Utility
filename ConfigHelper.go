@@ -62,3 +62,28 @@ func (helper *ConfigHelper) ExpandConfigData2() (error, bool) {
 
 	return ret, modified
 }
+
+func (helper *ConfigHelper) StoreConfigData() error {
+	var ret error = nil
+
+	if helper.isCreatedByFunc {
+		mode := os.FileMode(0644)
+		if configFileStat, statError := os.Stat(helper.configFilePath); statError == nil {
+			mode = configFileStat.Mode()
+		}
+
+		if jsonBytes, marshalErr := json.Marshal(helper.configData); marshalErr == nil {
+			if ret = ioutil.WriteFile(helper.configFilePath, jsonBytes, mode); ret == nil {
+				if configFileStat, statError := os.Stat(helper.configFilePath); statError == nil {
+					helper.lastUpdateTimeUt = configFileStat.ModTime().Unix()
+				}
+			}
+		} else {
+			ret = marshalErr
+		}
+	} else {
+		ret = errors.New(`helper is not created by NewConfigHelper`)
+	}
+
+	return ret
+}
