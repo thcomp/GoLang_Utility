@@ -47,3 +47,14 @@ func TestStringBuilder(t *testing.T) {
 		t.Error(`Bytes1 is failed`)
 	}
 }
+
+func TestStringBuilder2(t *testing.T) {
+	var builder StringBuilder
+
+	builder.Appendf("%05d, %2.2f, %s", 1, 1.1, "テスト")
+	if builder.String() != `00001, 1.10, テスト` {
+		t.Errorf("Appendf is failed: %s vs 00001, 1.10, テスト", builder.String())
+	} else {
+		t.Log(builder.String())
+	}
+}

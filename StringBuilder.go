@@ -2,6 +2,7 @@ package utility
 
 import (
 	"bytes"
+	"fmt"
 	//	"log"
 )
 
@@ -26,6 +27,15 @@ func (this *StringBuilder) Append(text string) *StringBuilder {
 	}
 
 	this.mBuffer.WriteString(text)
+	return this
+}
+
+func (this *StringBuilder) Appendf(fmtText string, params ...interface{}) *StringBuilder {
+	if this.mBuffer == nil {
+		this.mBuffer = bytes.NewBufferString("")
+	}
+
+	this.mBuffer.WriteString(fmt.Sprintf(fmtText, params...))
 	return this
 }
 
