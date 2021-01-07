@@ -15,6 +15,12 @@ const sCUIParamTagInit = "init"
 const sCUIParamTagDescription = "desc"
 const sCUIParamTagExpect = "expect"
 
+const CUIParamExpectIn = "in("
+const CUIParamExpectFolder = "folder"
+const CUIParamExpectFile = "file"
+const CUIParamExpectExist = "exist"
+const CUIParamExpectNotExist = "not_exist"
+
 type sParamTagInfo struct {
 	Name           string `json:"name"`
 	targetField    reflect.Value
@@ -50,10 +56,10 @@ func GetCUIParameter(receiver interface{}) []error {
 
 						if len(nameValueSlice) >= 2 {
 							switch nameValueSlice[0] {
-							case "name":
+							case sCUIParamTagName:
 								paramInfo.Name = strings.Trim(nameValueSlice[1], " \t\"'")
 								break
-							case "init":
+							case sCUIParamTagInit:
 								nameValueSlice[1] = strings.Trim(nameValueSlice[1], " \t")
 								if (strings.HasPrefix(nameValueSlice[1], "\"") && strings.HasSuffix(nameValueSlice[1], "\"")) ||
 									(strings.HasPrefix(nameValueSlice[1], "'") && strings.HasSuffix(nameValueSlice[1], "'")) {
@@ -94,10 +100,10 @@ func GetCUIParameter(receiver interface{}) []error {
 									}
 								}
 								break
-							case "desc":
+							case sCUIParamTagDescription:
 								paramInfo.Description = strings.Trim(nameValueSlice[1], " \t\"'")
 								break
-							case "expect":
+							case sCUIParamTagExpect:
 								paramInfo.Expect = strings.Trim(nameValueSlice[1], " \t\"'")
 								break
 							}
@@ -176,6 +182,122 @@ func GetCUIParameter(receiver interface{}) []error {
 		}
 	} else {
 		ret = append(ret, fmt.Errorf("receiver need pointer"))
+	}
+
+	return ret
+}
+
+func isValidParameter(fieldInfHelper *InterfaceHelper, paramInfo *sParamTagInfo) error {
+	ret := error(nil)
+
+	if fieldInfHelper.IsString() {
+		tempValue, _ := fieldInfHelper.GetString()
+		ret = isValidStringParameter(tempValue, paramInfo.Expect)
+	} else if fieldInfHelper.IsNumber() {
+		tempValue, _ := fieldInfHelper.GetNumber()
+		ret = isValidNumberParameter(tempValue, paramInfo.Expect)
+	}
+
+	return ret
+}
+
+func isValidStringParameter(strValue string, expect string) error {
+	ret := error(nil)
+	expectFileAndNotExist := false
+	expectFolderAndNotExist := false
+	needExistButNotExist := false
+	needNotExistButExist := false
+	inItem := false
+
+	expectItems := strings.Split(expect, "|")
+	for _, expectItem := range expectItems {
+		expectItem = strings.ToLower(strings.Trim(expectItem, " \t"))
+		if expectItem == CUIParamExpectFile {
+			if !IsExist(strValue) {
+				expectFileAndNotExist = true
+			} else if IsDir(strValue) {
+				ret = fmt.Errorf("expect file, but it is folder: %s", strValue)
+				break
+			}
+		} else if expectItem == CUIParamExpectFolder {
+			if !IsExist(strValue) {
+				expectFolderAndNotExist = true
+			} else if IsFile(strValue) {
+				ret = fmt.Errorf("expect folder, but it is file: %s", strValue)
+				break
+			}
+		} else if expectItem == CUIParamExpectExist {
+			if !IsExist(strValue) {
+				needExistButNotExist = true
+			}
+		} else if expectItem == CUIParamExpectNotExist {
+			if IsExist(strValue) {
+				needNotExistButExist = true
+			}
+		} else if strings.HasPrefix(expectItem, CUIParamExpectIn) && strings.HasSuffix(expectItem, ")") {
+			expectItem = strings.Trim(expectItem[len(CUIParamExpectIn):len(expectItem)-1], " \t\"'")
+			splitExpectItem := strings.Split(expectItem, ",")
+
+			for _, uniSplitExpectItem := range splitExpectItem {
+				if uniSplitExpectItem == strValue {
+					inItem = true
+					break
+				}
+			}
+		}
+	}
+
+	if inItem {
+		// no-op
+	} else {
+		if expectFileAndNotExist || expectFolderAndNotExist || needExistButNotExist || needNotExistButExist {
+			if (expectFileAndNotExist || expectFolderAndNotExist) && needExistButNotExist {
+				ret = fmt.Errorf("not found: %s", strValue)
+			} else if needNotExistButExist {
+				ret = fmt.Errorf("expect not exist, but exist: %s", strValue)
+			}
+		}
+	}
+
+	return ret
+}
+
+func isValidNumberParameter(floatValue float64, expect string) error {
+	ret := error(nil)
+	splitExpect := strings.Split(expect, ",")
+
+	if len(splitExpect) == 1 {
+		// uni value or uni range
+		splitExpect[0] = strings.Trim(splitExpect[0], " \t")
+
+		if rangeValue, parseErr := ParseNumberRange(splitExpect[0]); parseErr == nil {
+			// range
+			if rangeValue.Out(floatValue) {
+				ret = fmt.Errorf("%f is out of %s", floatValue, expect)
+			}
+		} else {
+			// value
+			if tempValue, err := ParseNumber(splitExpect[0]); err == nil {
+				if floatValue != tempValue {
+					ret = fmt.Errorf("not expected value: %f not in %s", floatValue, expect)
+				}
+			} else {
+				ret = err
+			}
+		}
+	} else {
+		// multi value or range
+		valid := false
+		for _, uniSplitExpect := range splitExpect {
+			if err := isValidNumberParameter(floatValue, uniSplitExpect); err == nil {
+				valid = true
+				break
+			}
+		}
+
+		if !valid {
+			ret = fmt.Errorf("not expected value: %f not in %s", floatValue, expect)
+		}
 	}
 
 	return ret

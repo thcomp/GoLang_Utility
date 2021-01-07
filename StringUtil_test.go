@@ -70,3 +70,29 @@ func TestStringUtil3(t *testing.T) {
 		}
 	}
 }
+
+func Test_ParseNumber(t *testing.T) {
+	testSlice := []struct {
+		Str         string
+		ExpectValue float64
+	}{
+		{Str: "100", ExpectValue: float64(100)},
+		{Str: "-200", ExpectValue: float64(-200)},
+		{Str: "1.112", ExpectValue: float64(1.112)},
+		{Str: "-0.112", ExpectValue: float64(-0.112)},
+		{Str: "0x1123", ExpectValue: float64(0x1123)},
+		{Str: "-0x112F", ExpectValue: float64(-0x112F)},
+		{Str: "b'1100'", ExpectValue: float64(12)},
+		{Str: "-b'1100'", ExpectValue: float64(-12)},
+	}
+
+	for _, test := range testSlice {
+		if value, err := ParseNumber(test.Str); err == nil {
+			if value != test.ExpectValue {
+				t.Fatalf("not matched: %f vs %f", value, test.ExpectValue)
+			}
+		} else {
+			t.Fatalf("%v: %v\n", test, err)
+		}
+	}
+}
