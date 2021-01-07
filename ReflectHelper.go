@@ -162,6 +162,58 @@ func (this *ReflectHelper) IsFloat64(index int) bool {
 	return this.mTargetValue.Field(index).Kind() == reflect.Float64
 }
 
+func (this *ReflectHelper) IsFloat(index int) bool {
+	return this.mTargetValue.Field(index).Kind() == reflect.Float32 || this.mTargetValue.Field(index).Kind() == reflect.Float64
+}
+
+func (this *ReflectHelper) IsInt(index int) bool {
+	ret := false
+
+	switch this.mTargetValue.Field(index).Kind() {
+	case reflect.Int:
+		fallthrough
+	case reflect.Int8:
+		fallthrough
+	case reflect.Int16:
+		fallthrough
+	case reflect.Int32:
+		fallthrough
+	case reflect.Int64:
+		ret = true
+		break
+	}
+
+	return ret
+}
+
+func (this *ReflectHelper) IsUint(index int) bool {
+	ret := false
+
+	switch this.mTargetValue.Field(index).Kind() {
+	case reflect.Uint:
+		fallthrough
+	case reflect.Uint8:
+		fallthrough
+	case reflect.Uint16:
+		fallthrough
+	case reflect.Uint32:
+		fallthrough
+	case reflect.Uint64:
+		ret = true
+		break
+	}
+
+	return ret
+}
+
+func (this *ReflectHelper) IsIntUint(index int) bool {
+	return this.IsInt(index) || this.IsUint(index)
+}
+
+func (this *ReflectHelper) IsNumber(index int) bool {
+	return this.IsInt(index) || this.IsUint(index) || this.IsFloat(index)
+}
+
 func (this *ReflectHelper) SetByName(name string, value interface{}) bool {
 	var ret bool = false
 	var tempValue reflect.Value = this.mTargetValue.FieldByName(name)
@@ -174,13 +226,24 @@ func (this *ReflectHelper) SetByName(name string, value interface{}) bool {
 	return ret
 }
 
-func (this *ReflectHelper) SetByIndex(index int, value interface{}) bool {
+func (this *ReflectHelper) SetByIndex(index int, valueInf interface{}, allowCastFlag int) bool {
 	var ret bool = false
-	var tempValue reflect.Value = this.mTargetValue.Field(index)
+	var tempValue reflect.Value = this.mTargetValue.Field(index).Addr().Elem()
 
 	if tempValue.CanSet() {
-		tempValue.Set(reflect.ValueOf(value))
-		ret = true
+		v := reflect.ValueOf(valueInf)
+		if v.Kind() == reflect.Ptr {
+			v = reflect.Indirect(v)
+		}
+
+		if tempValue.Kind() == v.Kind() {
+			tempValue.Set(v)
+			ret = true
+		} else {
+			if this.IsNumber(index) {
+
+			}
+		}
 	}
 
 	return ret
@@ -215,6 +278,14 @@ func (this *ReflectHelper) GetByTagName(key string, name string) interface{} {
 
 func (this *ReflectHelper) GetByIndex(index int) interface{} {
 	return this.mTargetValue.Field(index).Interface()
+}
+
+func (this *ReflectHelper) GetValueByIndex(index int) reflect.Value {
+	return this.mTargetValue.Field(index)
+}
+
+func (this *ReflectHelper) GetPtrByIndex(index int) reflect.Value {
+	return this.mTargetValue.Field(index).Addr().Elem()
 }
 
 func (this *ReflectHelper) Call(methodName string, values []reflect.Value) []reflect.Value {

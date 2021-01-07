@@ -5,14 +5,26 @@ import (
 )
 
 type InterfaceHelper struct {
-	value reflect.Value
-	kind  reflect.Kind
+	value      reflect.Value
+	kind       reflect.Kind
+	ptrToValue reflect.Value
+	ptrToKind  reflect.Kind
 }
 
 func NewInterfaceHelper(valueInterface interface{}) *InterfaceHelper {
-	ret := InterfaceHelper{
-		value: reflect.ValueOf(valueInterface),
-		kind:  reflect.ValueOf(valueInterface).Kind(),
+	ret := InterfaceHelper{}
+
+	if value, assertionOK := valueInterface.(reflect.Value); assertionOK {
+		ret.value = value
+		ret.kind = ret.value.Kind()
+	} else {
+		ret.value = reflect.ValueOf(valueInterface)
+		ret.kind = ret.value.Kind()
+	}
+
+	if ret.kind == reflect.Ptr {
+		ret.ptrToValue = reflect.Indirect(ret.value)
+		ret.ptrToKind = ret.ptrToValue.Kind()
 	}
 
 	return &ret
@@ -27,6 +39,14 @@ func (helper *InterfaceHelper) GetString() (string, bool) {
 		matched = true
 		ret = helper.value.String()
 		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.String:
+			matched = true
+			ret = helper.ptrToValue.String()
+			break
+		}
+		break
 	}
 
 	return ret, matched
@@ -40,6 +60,14 @@ func (helper *InterfaceHelper) GetBool() (bool, bool) {
 	case reflect.Bool:
 		matched = true
 		ret = helper.value.Bool()
+		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.Bool:
+			matched = true
+			ret = helper.ptrToValue.Bool()
+			break
+		}
 		break
 	}
 
@@ -62,6 +90,22 @@ func (helper *InterfaceHelper) GetNumber() (float64, bool) {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		matched = true
 		ret = float64(helper.value.Uint())
+		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.Float32, reflect.Float64:
+			matched = true
+			ret = helper.ptrToValue.Float()
+			break
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			matched = true
+			ret = float64(helper.ptrToValue.Int())
+			break
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			matched = true
+			ret = float64(helper.ptrToValue.Uint())
+			break
+		}
 		break
 	}
 
@@ -162,7 +206,13 @@ func (helper *InterfaceHelper) GetBoolArray() ([]bool, bool) {
 }
 
 func (helper *InterfaceHelper) GetKind() reflect.Kind {
-	return helper.kind
+	ret := helper.kind
+
+	if ret == reflect.Ptr {
+		ret = helper.ptrToKind
+	}
+
+	return ret
 }
 
 func (helper *InterfaceHelper) IsNumber() bool {
@@ -182,6 +232,13 @@ func (helper *InterfaceHelper) IsFloat() bool {
 	case reflect.Float32, reflect.Float64:
 		ret = true
 		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.Float32, reflect.Float64:
+			ret = true
+			break
+		}
+		break
 	}
 
 	return ret
@@ -193,6 +250,13 @@ func (helper *InterfaceHelper) IsInt() bool {
 	switch helper.kind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		ret = true
+		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			ret = true
+			break
+		}
 		break
 	}
 
@@ -206,6 +270,13 @@ func (helper *InterfaceHelper) IsUint() bool {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		ret = true
 		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			ret = true
+			break
+		}
+		break
 	}
 
 	return ret
@@ -217,6 +288,13 @@ func (helper *InterfaceHelper) IsString() bool {
 	switch helper.kind {
 	case reflect.String:
 		ret = true
+		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.String:
+			ret = true
+			break
+		}
 		break
 	}
 
@@ -230,6 +308,13 @@ func (helper *InterfaceHelper) IsBool() bool {
 	case reflect.Bool:
 		ret = true
 		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.Bool:
+			ret = true
+			break
+		}
+		break
 	}
 
 	return ret
@@ -242,6 +327,69 @@ func (helper *InterfaceHelper) IsArrayOrSlice() bool {
 	case reflect.Array, reflect.Slice:
 		ret = true
 		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.Array, reflect.Slice:
+			ret = true
+			break
+		}
+		break
+	}
+
+	return ret
+}
+
+func (helper *InterfaceHelper) Set(from interface{}) bool {
+	ret := true
+
+	if helper.kind == reflect.Ptr {
+		fromInfHelper := NewInterfaceHelper(from)
+
+		if helper.IsBool() && fromInfHelper.IsBool() {
+			value, _ := fromInfHelper.GetBool()
+			helper.ptrToValue.SetBool(value)
+		} else if helper.IsString() && fromInfHelper.IsString() {
+			value, _ := fromInfHelper.GetString()
+			helper.ptrToValue.SetString(value)
+		} else if helper.IsInt() && fromInfHelper.IsInt() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.ptrToValue.SetInt(int64(value))
+		} else if helper.IsUint() && fromInfHelper.IsUint() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.ptrToValue.SetUint(uint64(value))
+		} else if helper.IsFloat() && fromInfHelper.IsFloat() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.ptrToValue.SetFloat(value)
+		} else if helper.IsArrayOrSlice() && fromInfHelper.IsArrayOrSlice() {
+			ret = false
+		} else {
+			ret = false
+		}
+	} else if helper.value.CanSet() {
+		fromInfHelper := NewInterfaceHelper(from)
+
+		if helper.IsBool() && fromInfHelper.IsBool() {
+			value, _ := fromInfHelper.GetBool()
+			helper.value.SetBool(value)
+		} else if helper.IsString() && fromInfHelper.IsString() {
+			value, _ := fromInfHelper.GetString()
+			helper.value.SetString(value)
+		} else if helper.IsInt() && fromInfHelper.IsInt() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.value.SetInt(int64(value))
+		} else if helper.IsUint() && fromInfHelper.IsUint() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.value.SetUint(uint64(value))
+		} else if helper.IsFloat() && fromInfHelper.IsFloat() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.value.SetFloat(value)
+		} else if helper.IsArrayOrSlice() && fromInfHelper.IsArrayOrSlice() {
+			ret = false
+		} else {
+			ret = false
+		}
+	} else {
+		ret = false
 	}
 
 	return ret
