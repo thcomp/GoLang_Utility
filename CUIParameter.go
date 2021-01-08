@@ -31,7 +31,13 @@ type sParamTagInfo struct {
 	Expect         string      `json:"expect"`
 }
 
-func GetCUIParameter(receiver interface{}) []error {
+func GetCUIParameter(receiver interface{}, debug bool) []error {
+	currentLogLevel := GetLogLevel()
+	defer ChangeLogLevel(currentLogLevel)
+	if debug {
+		ChangeLogLevel(LogLevelV)
+	}
+
 	ret := []error{}
 	receiverValue := reflect.ValueOf(receiver)
 
@@ -63,7 +69,7 @@ func GetCUIParameter(receiver interface{}) []error {
 								nameValueSlice[1] = strings.Trim(nameValueSlice[1], " \t")
 								if (strings.HasPrefix(nameValueSlice[1], "\"") && strings.HasSuffix(nameValueSlice[1], "\"")) ||
 									(strings.HasPrefix(nameValueSlice[1], "'") && strings.HasSuffix(nameValueSlice[1], "'")) {
-									paramInfo.InitValue = nameValueSlice[1]
+									paramInfo.InitValue = nameValueSlice[1][1 : len(nameValueSlice[1])-1]
 								} else {
 									nameValueSlice[1] = strings.ToLower(nameValueSlice[1])
 
@@ -132,6 +138,7 @@ func GetCUIParameter(receiver interface{}) []error {
 				case reflect.Bool:
 					defBoolValue, _ := paramInfo.InitValue.(bool)
 					paramInfo.inputValue = flag.Bool(paramInfo.Name, defBoolValue, paramInfo.Description)
+					LogfV("register %s, %v, %s", paramInfo.Name, defBoolValue, paramInfo.Description)
 					break
 				case reflect.Int:
 					fallthrough
@@ -145,6 +152,7 @@ func GetCUIParameter(receiver interface{}) []error {
 					initInfHelper := NewInterfaceHelper(paramInfo.InitValue)
 					defIntValue, _ := initInfHelper.GetNumber()
 					paramInfo.inputValue = flag.Int64(paramInfo.Name, int64(defIntValue), paramInfo.Description)
+					LogfV("register %s, %v, %s", paramInfo.Name, defIntValue, paramInfo.Description)
 					break
 				case reflect.Uint:
 					fallthrough
@@ -158,25 +166,39 @@ func GetCUIParameter(receiver interface{}) []error {
 					initInfHelper := NewInterfaceHelper(paramInfo.InitValue)
 					defUintValue, _ := initInfHelper.GetNumber()
 					paramInfo.inputValue = flag.Uint64(paramInfo.Name, uint64(defUintValue), paramInfo.Description)
+					LogfV("register %s, %v, %s", paramInfo.Name, defUintValue, paramInfo.Description)
 					break
 				case reflect.Float32:
 					fallthrough
 				case reflect.Float64:
 					defFloatValue, _ := paramInfo.InitValue.(float64)
 					paramInfo.inputValue = flag.Float64(paramInfo.Name, defFloatValue, paramInfo.Description)
+					LogfV("register %s, %v, %s", paramInfo.Name, defFloatValue, paramInfo.Description)
 					break
 				case reflect.String:
 					defStringValue, _ := paramInfo.InitValue.(string)
 					paramInfo.inputValue = flag.String(paramInfo.Name, defStringValue, paramInfo.Description)
+					LogfV("register %s, %v, %s", paramInfo.Name, defStringValue, paramInfo.Description)
 					break
 				}
 			}
+			LogV("parse args")
 			flag.Parse()
 
 			for _, paramInfo := range paramInfoSlice {
 				if paramInfo.inputValue != nil {
 					infHelper := NewInterfaceHelper(paramInfo.targetField)
-					infHelper.Set(reflect.Indirect(reflect.ValueOf(paramInfo.inputValue)))
+
+					inputValue := reflect.ValueOf(paramInfo.inputValue)
+					inputValueIndirect := reflect.Indirect(inputValue)
+					LogfV("input value: %v, indirect: %v", inputValue, inputValueIndirect)
+
+					infHelper.Set(inputValueIndirect)
+
+					if validErr := isValidParameter(infHelper, paramInfo); validErr != nil {
+						ret = append(ret, validErr)
+						break
+					}
 				}
 			}
 		}
@@ -190,12 +212,14 @@ func GetCUIParameter(receiver interface{}) []error {
 func isValidParameter(fieldInfHelper *InterfaceHelper, paramInfo *sParamTagInfo) error {
 	ret := error(nil)
 
-	if fieldInfHelper.IsString() {
-		tempValue, _ := fieldInfHelper.GetString()
-		ret = isValidStringParameter(tempValue, paramInfo.Expect)
-	} else if fieldInfHelper.IsNumber() {
-		tempValue, _ := fieldInfHelper.GetNumber()
-		ret = isValidNumberParameter(tempValue, paramInfo.Expect)
+	if len(paramInfo.Expect) > 0 {
+		if fieldInfHelper.IsString() {
+			tempValue, _ := fieldInfHelper.GetString()
+			ret = isValidStringParameter(tempValue, paramInfo.Expect)
+		} else if fieldInfHelper.IsNumber() {
+			tempValue, _ := fieldInfHelper.GetNumber()
+			ret = isValidNumberParameter(tempValue, paramInfo.Expect)
+		}
 	}
 
 	return ret
@@ -216,14 +240,14 @@ func isValidStringParameter(strValue string, expect string) error {
 			if !IsExist(strValue) {
 				expectFileAndNotExist = true
 			} else if IsDir(strValue) {
-				ret = fmt.Errorf("expect file, but it is folder: %s", strValue)
+				ret = fmt.Errorf("expect file, but it is folder: '%s'", strValue)
 				break
 			}
 		} else if expectItem == CUIParamExpectFolder {
 			if !IsExist(strValue) {
 				expectFolderAndNotExist = true
 			} else if IsFile(strValue) {
-				ret = fmt.Errorf("expect folder, but it is file: %s", strValue)
+				ret = fmt.Errorf("expect folder, but it is file: '%s'", strValue)
 				break
 			}
 		} else if expectItem == CUIParamExpectExist {
@@ -252,9 +276,9 @@ func isValidStringParameter(strValue string, expect string) error {
 	} else {
 		if expectFileAndNotExist || expectFolderAndNotExist || needExistButNotExist || needNotExistButExist {
 			if (expectFileAndNotExist || expectFolderAndNotExist) && needExistButNotExist {
-				ret = fmt.Errorf("not found: %s", strValue)
+				ret = fmt.Errorf("not found: '%s'", strValue)
 			} else if needNotExistButExist {
-				ret = fmt.Errorf("expect not exist, but exist: %s", strValue)
+				ret = fmt.Errorf("expect not exist, but exist: '%s'", strValue)
 			}
 		}
 	}
