@@ -2,7 +2,9 @@
 package utility
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -20,6 +22,7 @@ type LoggerIF interface {
 type Logger struct {
 	LogLevel    int
 	initialized bool
+	outputFile  string
 }
 
 const LogLevelE = 1
@@ -62,11 +65,15 @@ func ChangeLogLevelByText(logLevelText string) {
 	}
 }
 
+func ChangeOutput(outputFile string) {
+	gLogger.outputFile = outputFile
+}
+
 func LogV(content string) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelV) == LogLevelV {
-		log.Println(logTypeV + content)
+		gLogger.LogV(content)
 	}
 }
 
@@ -74,7 +81,7 @@ func LogD(content string) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelD) == LogLevelD {
-		log.Println(logTypeD + content)
+		gLogger.LogD(content)
 	}
 }
 
@@ -82,7 +89,7 @@ func LogI(content string) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelI) == LogLevelI {
-		log.Println(logTypeI + content)
+		gLogger.LogI(content)
 	}
 }
 
@@ -90,7 +97,7 @@ func LogW(content string) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelW) == LogLevelW {
-		log.Println(logTypeW + content)
+		gLogger.LogW(content)
 	}
 }
 
@@ -98,7 +105,7 @@ func LogE(content string) {
 	LogInit()
 
 	if gLogger.LogLevel&LogLevelE == LogLevelE {
-		log.Println(logTypeE + content)
+		gLogger.LogE(content)
 	}
 }
 
@@ -106,7 +113,7 @@ func LogfV(format string, args ...interface{}) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelV) == LogLevelV {
-		log.Printf(logTypeV+format+"\n", args...)
+		gLogger.LogfV(format, args...)
 	}
 }
 
@@ -114,7 +121,7 @@ func LogfD(format string, args ...interface{}) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelD) == LogLevelD {
-		log.Printf(logTypeD+format+"\n", args...)
+		gLogger.LogfD(format, args...)
 	}
 }
 
@@ -122,7 +129,7 @@ func LogfI(format string, args ...interface{}) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelI) == LogLevelI {
-		log.Printf(logTypeI+format+"\n", args...)
+		gLogger.LogfI(format, args...)
 	}
 }
 
@@ -130,7 +137,7 @@ func LogfW(format string, args ...interface{}) {
 	LogInit()
 
 	if (gLogger.LogLevel & LogLevelW) == LogLevelW {
-		log.Printf(logTypeW+format+"\n", args...)
+		gLogger.LogfW(format, args...)
 	}
 }
 
@@ -138,27 +145,27 @@ func LogfE(format string, args ...interface{}) {
 	LogInit()
 
 	if gLogger.LogLevel&LogLevelE == LogLevelE {
-		log.Printf(logTypeE+format+"\n", args...)
+		gLogger.LogfE(format, args...)
 	}
 }
 
-func (this Logger) logInit() {
+func (this *Logger) logInit() {
 	if !this.initialized {
 		this.LogLevel = gDefaultLogLevel
 		this.initialized = true
 	}
 }
 
-func (this Logger) GetLogLevel() int {
+func (this *Logger) GetLogLevel() int {
 	return this.LogLevel
 }
 
-func (this Logger) ChangeLogLevel(logLevel int) {
+func (this *Logger) ChangeLogLevel(logLevel int) {
 	this.LogLevel = logLevel
 	this.initialized = true
 }
 
-func (this Logger) ChangeLogLevelByText(logLevelText string) {
+func (this *Logger) ChangeLogLevelByText(logLevelText string) {
 	if logLevel, getRet := getLogLevel(logLevelText); getRet {
 		this.LogLevel = logLevel
 		this.initialized = true
@@ -185,82 +192,98 @@ func getLogLevel(logLevelText string) (int, bool) {
 	return logLevelInt, ret
 }
 
-func (this Logger) LogV(content string) {
+func (this *Logger) LogV(content string) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelV) == LogLevelV {
-		log.Println(logTypeV + content)
+		this.output(logTypeV + content + "\n")
 	}
 }
 
-func (this Logger) LogD(content string) {
+func (this *Logger) LogD(content string) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelD) == LogLevelD {
-		log.Println(logTypeD + content)
+		this.output(logTypeD + content + "\n")
 	}
 }
 
-func (this Logger) LogI(content string) {
+func (this *Logger) LogI(content string) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelI) == LogLevelI {
-		log.Println(logTypeI + content)
+		this.output(logTypeI + content + "\n")
 	}
 }
 
-func (this Logger) LogW(content string) {
+func (this *Logger) LogW(content string) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelW) == LogLevelW {
-		log.Println(logTypeW + content)
+		this.output(logTypeW + content + "\n")
 	}
 }
 
-func (this Logger) LogE(content string) {
+func (this *Logger) LogE(content string) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelE) == LogLevelE {
-		log.Println(logTypeE + content)
+		this.output(logTypeE + content + "\n")
 	}
 }
 
-func (this Logger) LogfV(format string, args ...interface{}) {
+func (this *Logger) LogfV(format string, args ...interface{}) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelV) == LogLevelV {
-		log.Printf(logTypeV+format+"\n", args...)
+		this.output(logTypeV+format+"\n", args...)
 	}
 }
 
-func (this Logger) LogfD(format string, args ...interface{}) {
+func (this *Logger) LogfD(format string, args ...interface{}) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelD) == LogLevelD {
-		log.Printf(logTypeD+format+"\n", args...)
+		this.output(logTypeD+format+"\n", args...)
 	}
 }
 
-func (this Logger) LogfI(format string, args ...interface{}) {
+func (this *Logger) LogfI(format string, args ...interface{}) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelI) == LogLevelI {
-		log.Printf(logTypeI+format+"\n", args...)
+		this.output(logTypeI+format+"\n", args...)
 	}
 }
 
-func (this Logger) LogfW(format string, args ...interface{}) {
+func (this *Logger) LogfW(format string, args ...interface{}) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelW) == LogLevelW {
-		log.Printf(logTypeW+format+"\n", args...)
+		this.output(logTypeW+format+"\n", args...)
 	}
 }
 
-func (this Logger) LogfE(format string, args ...interface{}) {
+func (this *Logger) LogfE(format string, args ...interface{}) {
 	this.logInit()
 
 	if (this.LogLevel & LogLevelE) == LogLevelE {
-		log.Printf(logTypeE+format+"\n", args...)
+		this.output(logTypeE+format+"\n", args...)
 	}
+}
+
+func (this *Logger) output(format string, args ...interface{}) {
+	if len(this.outputFile) == 0 {
+		log.Printf(format, args...)
+	} else {
+		if desc, openErr := os.OpenFile(this.outputFile, os.O_CREATE|os.O_APPEND, 0644); openErr == nil {
+			defer desc.Close()
+			desc.Write([]byte(fmt.Sprintf(format, args...)))
+		}
+	}
+}
+
+func (this *Logger) ChangeOutput(outputFile string) {
+	this.logInit()
+	this.outputFile = outputFile
 }
