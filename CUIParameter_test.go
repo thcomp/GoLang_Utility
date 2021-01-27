@@ -6,11 +6,15 @@ import (
 	"testing"
 )
 
+type ParameterCommon struct {
+	Thread int  `cui_param:"name: 'thread', init: 10, desc: 'working thread count'"`
+	Debug  bool `cui_param:"name: 'debug', init: false, desc: 'enable debug log or not'"`
+}
+
 type Parameter struct {
+	ParameterCommon
 	InputFile   string `cui_param:"{\"name\": \"i_file\", \"init\": \"\", \"desc\": \"\", \"expect\": \"file|exist\"}"`
 	InputFolder string `cui_param:"name: 'i_folder', init: '', desc: '', expect: 'folder|exist'"`
-	Thread      int    `cui_param:"name: 'thread', init: 10, desc: 'working thread count'"`
-	Debug       bool   `cui_param:"name: 'debug', init: false, desc: 'enable debug log or not'"`
 }
 
 func (param *Parameter) String() string {
@@ -37,7 +41,7 @@ func Test_GetCUIParameter(t *testing.T) {
 		}
 
 		param := &Parameter{}
-		if errors := GetCUIParameter(param); len(errors) == 0 {
+		if errors := GetCUIParameter(param, false); len(errors) == 0 {
 			if param.InputFile != paramSlice[0].value {
 				t.Fatalf("not matched: %s vs %s", param.InputFile, paramSlice[0].value)
 			}

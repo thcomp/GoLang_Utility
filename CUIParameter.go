@@ -46,85 +46,95 @@ func GetCUIParameter(receiver interface{}, debug bool) []error {
 		paramInfoSlice := [](*sParamTagInfo){}
 
 		for i := 0; i < reflectHelper.NumField(); i++ {
-			tempError := error(nil)
-			tagInfo := reflectHelper.Tag(i)
-			if tagValue, exist := tagInfo.Lookup(sCUIParamTag); exist {
-				paramInfo := &sParamTagInfo{targetField: reflectHelper.GetPtrByIndex(i), targetFieldInf: reflectHelper.GetByIndex(i)}
-				if unmarshalErr := json.Unmarshal([]byte(tagValue), &paramInfo); unmarshalErr == nil {
-					// json format
-				} else {
-					// name and value separated by ":" joint comma format
-					// ex. name:"file",init:1,desc:test,expect:"file|exist"
-					nameAndValueSlice := strings.Split(tagValue, ",")
-					for _, nameAndValue := range nameAndValueSlice {
-						nameAndValue = strings.Trim(nameAndValue, " \t")
-						nameValueSlice := strings.Split(nameAndValue, ":")
+			if reflectHelper.ValueKind(i) == reflect.Struct {
+				tempErrors := GetCUIParameter(reflectHelper.GetAddrByIndex(i).Interface(), debug)
+				if tempErrors != nil && len(tempErrors) > 0 {
+					for _, tempError := range tempErrors {
+						ret = append(ret, tempError)
+					}
+				}
+				continue
+			} else {
+				tempError := error(nil)
+				tagInfo := reflectHelper.Tag(i)
+				if tagValue, exist := tagInfo.Lookup(sCUIParamTag); exist {
+					paramInfo := &sParamTagInfo{targetField: reflectHelper.GetPtrByIndex(i), targetFieldInf: reflectHelper.GetByIndex(i)}
+					if unmarshalErr := json.Unmarshal([]byte(tagValue), &paramInfo); unmarshalErr == nil {
+						// json format
+					} else {
+						// name and value separated by ":" joint comma format
+						// ex. name:"file",init:1,desc:test,expect:"file|exist"
+						nameAndValueSlice := strings.Split(tagValue, ",")
+						for _, nameAndValue := range nameAndValueSlice {
+							nameAndValue = strings.Trim(nameAndValue, " \t")
+							nameValueSlice := strings.Split(nameAndValue, ":")
 
-						if len(nameValueSlice) >= 2 {
-							switch nameValueSlice[0] {
-							case sCUIParamTagName:
-								paramInfo.Name = strings.Trim(nameValueSlice[1], " \t\"'")
-								break
-							case sCUIParamTagInit:
-								nameValueSlice[1] = strings.Trim(nameValueSlice[1], " \t")
-								if (strings.HasPrefix(nameValueSlice[1], "\"") && strings.HasSuffix(nameValueSlice[1], "\"")) ||
-									(strings.HasPrefix(nameValueSlice[1], "'") && strings.HasSuffix(nameValueSlice[1], "'")) {
-									paramInfo.InitValue = nameValueSlice[1][1 : len(nameValueSlice[1])-1]
-								} else {
-									nameValueSlice[1] = strings.ToLower(nameValueSlice[1])
-
-									if nameValueSlice[1] == "true" {
-										paramInfo.InitValue = true
-									} else if nameValueSlice[1] == "false" {
-										paramInfo.InitValue = false
-									} else if strings.HasPrefix(nameValueSlice[1], "0x") {
-										// hex
-										if tempValue, parseErr := strconv.ParseUint(nameValueSlice[1], 16, 64); parseErr == nil {
-											paramInfo.InitValue = tempValue
-										}
-									} else if strings.HasPrefix(nameValueSlice[1], "-") {
-										// under 0 value
-										if strings.Index(nameValueSlice[1], "0x") > 0 {
-											if tempValue, parseErr := strconv.ParseInt(nameValueSlice[1], 16, 64); parseErr == nil {
-												paramInfo.InitValue = tempValue
-											} else {
-												tempError = parseErr
-											}
-										} else {
-											if tempValue, parseErr := strconv.ParseInt(nameValueSlice[1], 10, 64); parseErr == nil {
-												paramInfo.InitValue = tempValue
-											} else {
-												tempError = parseErr
-											}
-										}
+							if len(nameValueSlice) >= 2 {
+								switch nameValueSlice[0] {
+								case sCUIParamTagName:
+									paramInfo.Name = strings.Trim(nameValueSlice[1], " \t\"'")
+									break
+								case sCUIParamTagInit:
+									nameValueSlice[1] = strings.Trim(nameValueSlice[1], " \t")
+									if (strings.HasPrefix(nameValueSlice[1], "\"") && strings.HasSuffix(nameValueSlice[1], "\"")) ||
+										(strings.HasPrefix(nameValueSlice[1], "'") && strings.HasSuffix(nameValueSlice[1], "'")) {
+										paramInfo.InitValue = nameValueSlice[1][1 : len(nameValueSlice[1])-1]
 									} else {
-										if tempValue, parseErr := strconv.ParseFloat(nameValueSlice[1], 64); parseErr == nil {
-											paramInfo.InitValue = tempValue
+										nameValueSlice[1] = strings.ToLower(nameValueSlice[1])
+
+										if nameValueSlice[1] == "true" {
+											paramInfo.InitValue = true
+										} else if nameValueSlice[1] == "false" {
+											paramInfo.InitValue = false
+										} else if strings.HasPrefix(nameValueSlice[1], "0x") {
+											// hex
+											if tempValue, parseErr := strconv.ParseUint(nameValueSlice[1], 16, 64); parseErr == nil {
+												paramInfo.InitValue = tempValue
+											}
+										} else if strings.HasPrefix(nameValueSlice[1], "-") {
+											// under 0 value
+											if strings.Index(nameValueSlice[1], "0x") > 0 {
+												if tempValue, parseErr := strconv.ParseInt(nameValueSlice[1], 16, 64); parseErr == nil {
+													paramInfo.InitValue = tempValue
+												} else {
+													tempError = parseErr
+												}
+											} else {
+												if tempValue, parseErr := strconv.ParseInt(nameValueSlice[1], 10, 64); parseErr == nil {
+													paramInfo.InitValue = tempValue
+												} else {
+													tempError = parseErr
+												}
+											}
 										} else {
-											tempError = parseErr
+											if tempValue, parseErr := strconv.ParseFloat(nameValueSlice[1], 64); parseErr == nil {
+												paramInfo.InitValue = tempValue
+											} else {
+												tempError = parseErr
+											}
 										}
 									}
+									break
+								case sCUIParamTagDescription:
+									paramInfo.Description = strings.Trim(nameValueSlice[1], " \t\"'")
+									break
+								case sCUIParamTagExpect:
+									paramInfo.Expect = strings.Trim(nameValueSlice[1], " \t\"'")
+									break
 								}
-								break
-							case sCUIParamTagDescription:
-								paramInfo.Description = strings.Trim(nameValueSlice[1], " \t\"'")
-								break
-							case sCUIParamTagExpect:
-								paramInfo.Expect = strings.Trim(nameValueSlice[1], " \t\"'")
-								break
 							}
 						}
 					}
-				}
 
-				if len(paramInfo.Name) == 0 {
-					paramInfo.Name = reflectHelper.Name(i)
-				}
+					if len(paramInfo.Name) == 0 {
+						paramInfo.Name = reflectHelper.Name(i)
+					}
 
-				if tempError == nil {
-					paramInfoSlice = append(paramInfoSlice, paramInfo)
-				} else {
-					ret = append(ret, tempError)
+					if tempError == nil {
+						paramInfoSlice = append(paramInfoSlice, paramInfo)
+					} else {
+						ret = append(ret, tempError)
+					}
 				}
 			}
 		}
