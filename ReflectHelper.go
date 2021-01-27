@@ -288,6 +288,10 @@ func (this *ReflectHelper) GetPtrByIndex(index int) reflect.Value {
 	return this.mTargetValue.Field(index).Addr().Elem()
 }
 
+func (this *ReflectHelper) GetAddrByIndex(index int) reflect.Value {
+	return this.mTargetValue.Field(index).Addr()
+}
+
 func (this *ReflectHelper) Call(methodName string, values []reflect.Value) []reflect.Value {
 	return reflect.ValueOf(this.mTargetInterface).MethodByName(methodName).Call(values)
 }
