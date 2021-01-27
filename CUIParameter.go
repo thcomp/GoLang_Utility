@@ -38,16 +38,100 @@ func GetCUIParameter(receiver interface{}, debug bool) []error {
 		ChangeLogLevel(LogLevelV)
 	}
 
+	paramInfoSlice, ret := parseParameter(receiver)
+	if len(paramInfoSlice) > 0 {
+		for _, paramInfo := range paramInfoSlice {
+			infHelper := NewInterfaceHelper(paramInfo.targetFieldInf)
+			targetKind := infHelper.GetKind()
+
+			switch targetKind {
+			case reflect.Bool:
+				defBoolValue, _ := paramInfo.InitValue.(bool)
+				paramInfo.inputValue = flag.Bool(paramInfo.Name, defBoolValue, paramInfo.Description)
+				LogfV("register %s, %v, %s", paramInfo.Name, defBoolValue, paramInfo.Description)
+				break
+			case reflect.Int:
+				fallthrough
+			case reflect.Int8:
+				fallthrough
+			case reflect.Int16:
+				fallthrough
+			case reflect.Int32:
+				fallthrough
+			case reflect.Int64:
+				initInfHelper := NewInterfaceHelper(paramInfo.InitValue)
+				defIntValue, _ := initInfHelper.GetNumber()
+				paramInfo.inputValue = flag.Int64(paramInfo.Name, int64(defIntValue), paramInfo.Description)
+				LogfV("register %s, %v, %s", paramInfo.Name, defIntValue, paramInfo.Description)
+				break
+			case reflect.Uint:
+				fallthrough
+			case reflect.Uint8:
+				fallthrough
+			case reflect.Uint16:
+				fallthrough
+			case reflect.Uint32:
+				fallthrough
+			case reflect.Uint64:
+				initInfHelper := NewInterfaceHelper(paramInfo.InitValue)
+				defUintValue, _ := initInfHelper.GetNumber()
+				paramInfo.inputValue = flag.Uint64(paramInfo.Name, uint64(defUintValue), paramInfo.Description)
+				LogfV("register %s, %v, %s", paramInfo.Name, defUintValue, paramInfo.Description)
+				break
+			case reflect.Float32:
+				fallthrough
+			case reflect.Float64:
+				defFloatValue, _ := paramInfo.InitValue.(float64)
+				paramInfo.inputValue = flag.Float64(paramInfo.Name, defFloatValue, paramInfo.Description)
+				LogfV("register %s, %v, %s", paramInfo.Name, defFloatValue, paramInfo.Description)
+				break
+			case reflect.String:
+				defStringValue, _ := paramInfo.InitValue.(string)
+				paramInfo.inputValue = flag.String(paramInfo.Name, defStringValue, paramInfo.Description)
+				LogfV("register %s, %v, %s", paramInfo.Name, defStringValue, paramInfo.Description)
+				break
+			}
+		}
+		LogV("parse args")
+		flag.Parse()
+
+		for _, paramInfo := range paramInfoSlice {
+			if paramInfo.inputValue != nil {
+				infHelper := NewInterfaceHelper(paramInfo.targetField)
+
+				inputValue := reflect.ValueOf(paramInfo.inputValue)
+				inputValueIndirect := reflect.Indirect(inputValue)
+				LogfV("input value: %v, indirect: %v", inputValue, inputValueIndirect)
+
+				infHelper.Set(inputValueIndirect)
+
+				if validErr := isValidParameter(infHelper, paramInfo); validErr != nil {
+					ret = append(ret, validErr)
+					break
+				}
+			}
+		}
+	}
+
+	return ret
+}
+
+func parseParameter(receiver interface{}) ([](*sParamTagInfo), []error) {
+	paramInfoSlice := [](*sParamTagInfo){}
 	ret := []error{}
 	receiverValue := reflect.ValueOf(receiver)
 
 	if receiverValue.Kind() == reflect.Ptr {
 		reflectHelper := NewReflectHelper(receiver)
-		paramInfoSlice := [](*sParamTagInfo){}
 
 		for i := 0; i < reflectHelper.NumField(); i++ {
 			if reflectHelper.ValueKind(i) == reflect.Struct {
-				tempErrors := GetCUIParameter(reflectHelper.GetAddrByIndex(i).Interface(), debug)
+				tempParamInfoSlice, tempErrors := parseParameter(reflectHelper.GetAddrByIndex(i).Interface())
+				if tempParamInfoSlice != nil && len(tempParamInfoSlice) > 0 {
+					for _, tempParamInfo := range tempParamInfoSlice {
+						paramInfoSlice = append(paramInfoSlice, tempParamInfo)
+					}
+				}
 				if tempErrors != nil && len(tempErrors) > 0 {
 					for _, tempError := range tempErrors {
 						ret = append(ret, tempError)
@@ -139,84 +223,11 @@ func GetCUIParameter(receiver interface{}, debug bool) []error {
 			}
 		}
 
-		if len(paramInfoSlice) > 0 {
-			for _, paramInfo := range paramInfoSlice {
-				infHelper := NewInterfaceHelper(paramInfo.targetFieldInf)
-				targetKind := infHelper.GetKind()
-
-				switch targetKind {
-				case reflect.Bool:
-					defBoolValue, _ := paramInfo.InitValue.(bool)
-					paramInfo.inputValue = flag.Bool(paramInfo.Name, defBoolValue, paramInfo.Description)
-					LogfV("register %s, %v, %s", paramInfo.Name, defBoolValue, paramInfo.Description)
-					break
-				case reflect.Int:
-					fallthrough
-				case reflect.Int8:
-					fallthrough
-				case reflect.Int16:
-					fallthrough
-				case reflect.Int32:
-					fallthrough
-				case reflect.Int64:
-					initInfHelper := NewInterfaceHelper(paramInfo.InitValue)
-					defIntValue, _ := initInfHelper.GetNumber()
-					paramInfo.inputValue = flag.Int64(paramInfo.Name, int64(defIntValue), paramInfo.Description)
-					LogfV("register %s, %v, %s", paramInfo.Name, defIntValue, paramInfo.Description)
-					break
-				case reflect.Uint:
-					fallthrough
-				case reflect.Uint8:
-					fallthrough
-				case reflect.Uint16:
-					fallthrough
-				case reflect.Uint32:
-					fallthrough
-				case reflect.Uint64:
-					initInfHelper := NewInterfaceHelper(paramInfo.InitValue)
-					defUintValue, _ := initInfHelper.GetNumber()
-					paramInfo.inputValue = flag.Uint64(paramInfo.Name, uint64(defUintValue), paramInfo.Description)
-					LogfV("register %s, %v, %s", paramInfo.Name, defUintValue, paramInfo.Description)
-					break
-				case reflect.Float32:
-					fallthrough
-				case reflect.Float64:
-					defFloatValue, _ := paramInfo.InitValue.(float64)
-					paramInfo.inputValue = flag.Float64(paramInfo.Name, defFloatValue, paramInfo.Description)
-					LogfV("register %s, %v, %s", paramInfo.Name, defFloatValue, paramInfo.Description)
-					break
-				case reflect.String:
-					defStringValue, _ := paramInfo.InitValue.(string)
-					paramInfo.inputValue = flag.String(paramInfo.Name, defStringValue, paramInfo.Description)
-					LogfV("register %s, %v, %s", paramInfo.Name, defStringValue, paramInfo.Description)
-					break
-				}
-			}
-			LogV("parse args")
-			flag.Parse()
-
-			for _, paramInfo := range paramInfoSlice {
-				if paramInfo.inputValue != nil {
-					infHelper := NewInterfaceHelper(paramInfo.targetField)
-
-					inputValue := reflect.ValueOf(paramInfo.inputValue)
-					inputValueIndirect := reflect.Indirect(inputValue)
-					LogfV("input value: %v, indirect: %v", inputValue, inputValueIndirect)
-
-					infHelper.Set(inputValueIndirect)
-
-					if validErr := isValidParameter(infHelper, paramInfo); validErr != nil {
-						ret = append(ret, validErr)
-						break
-					}
-				}
-			}
-		}
 	} else {
 		ret = append(ret, fmt.Errorf("receiver need pointer"))
 	}
 
-	return ret
+	return paramInfoSlice, ret
 }
 
 func isValidParameter(fieldInfHelper *InterfaceHelper, paramInfo *sParamTagInfo) error {
