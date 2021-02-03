@@ -276,7 +276,7 @@ func (this *Logger) output(format string, args ...interface{}) {
 	if len(this.outputFile) == 0 {
 		log.Printf(format, args...)
 	} else {
-		if desc, openErr := os.OpenFile(this.outputFile, os.O_CREATE|os.O_APPEND, 0644); openErr == nil {
+		if desc, openErr := os.OpenFile(this.outputFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644); openErr == nil {
 			defer desc.Close()
 			desc.Write([]byte(fmt.Sprintf(format, args...)))
 		}
