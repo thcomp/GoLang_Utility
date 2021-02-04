@@ -320,3 +320,25 @@ func GetParent(itemPath string) string {
 
 	return parent
 }
+
+func PrepareOutputFilepath(inputTopFolderpath, inputFilepath, outputTopFolderpath, distExtension string) string {
+	ret := ""
+	specifiedFolder := inputTopFolderpath
+
+	if len(specifiedFolder) > 0 {
+		ret = outputTopFolderpath + string(os.PathSeparator) + inputFilepath[len(inputTopFolderpath):]
+	} else {
+		ret = outputTopFolderpath + string(os.PathSeparator) + filepath.Base(inputFilepath)
+	}
+
+	if len(distExtension) > 0 {
+		ret = ChangeExtension(ret, distExtension)
+	}
+
+	newFileParentFolder := ret[0 : len(ret)-len(filepath.Base(ret))]
+	if !IsExist(newFileParentFolder) {
+		os.MkdirAll(newFileParentFolder, 0755)
+	}
+
+	return ret
+}
