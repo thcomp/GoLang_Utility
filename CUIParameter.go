@@ -106,7 +106,7 @@ func GetCUIParameter(receiver interface{}, debug bool) []error {
 				infHelper.Set(inputValueIndirect)
 
 				if validErr := isValidParameter(infHelper, paramInfo); validErr != nil {
-					ret = append(ret, validErr)
+					ret = append(ret, fmt.Errorf("%s: %s", paramInfo.Name, validErr.Error()))
 					break
 				}
 			}
@@ -309,7 +309,7 @@ func isValidStringParameter(strValue string, expect string) error {
 
 func isValidNumberParameter(floatValue float64, expect string) error {
 	ret := error(nil)
-	splitExpect := strings.Split(expect, ",")
+	splitExpect := strings.Split(expect, "|")
 
 	if len(splitExpect) == 1 {
 		// uni value or uni range
