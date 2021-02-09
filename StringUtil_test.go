@@ -1,7 +1,6 @@
 package utility
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -47,26 +46,76 @@ func TestStringUtil2(t *testing.T) {
 	}
 }
 
-func TestStringUtil3(t *testing.T) {
+// func TestStringUtil3(t *testing.T) {
+// 	var testCaseArray []string = []string{
+// 		`col1 = 1 OR col3="ANDO"`,
+// 		`(col1 = 1 AND col2 = "col2 value") OR col3="ANDO"`,
+// 	}
+// 	var testCaseExpectArray [][][]rune = [][][]rune{
+// 		{[]rune(`col1 = 1 `), []rune(`OR`), []rune(` col3="ANDO"`)},
+// 		{[]rune(`(`), []rune(`col1 = 1 `), []rune(`AND`), []rune(` col2 = "col2 value"`), []rune(`)`), []rune(` `), []rune(`OR`), []rune(` col3="ANDO"`)},
+// 	}
+
+// 	for i, testCase := range testCaseArray {
+// 		ret := Split(testCase, []string{"AND", "OR", "(", ")"}, []rune{'"', '\''}, false)
+// 		if len(ret) != len(testCaseExpectArray[i]) {
+// 			t.Errorf("length not matched: %d vs %d", len(ret), len(testCaseExpectArray[i]))
+// 		} else {
+// 			for j := 0; j < len(ret); j++ {
+// 				if strings.Compare(string(ret[j]), string(testCaseExpectArray[i][j])) != 0 {
+// 					t.Errorf("not matched: %s vs %s", string(ret[j]), string(testCaseExpectArray[i][j]))
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+func TestStringUtil4(t *testing.T) {
 	var testCaseArray []string = []string{
-		`col1 = 1 OR col3="ANDO"`,
-		`(col1 = 1 AND col2 = "col2 value") OR col3="ANDO"`,
+		`"json1": "value1, value2", "json2": "value3, value4"`,
+		`"json1": 'value1, value2', "json2": "value3, value4", "json3": "value3, 'value4'"`,
 	}
-	var testCaseExpectArray [][][]rune = [][][]rune{
-		{[]rune(`col1 = 1 `), []rune(`OR`), []rune(` col3="ANDO"`)},
-		{[]rune(`(`), []rune(`col1 = 1 `), []rune(`AND`), []rune(` col2 = "col2 value"`), []rune(`)`), []rune(` `), []rune(`OR`), []rune(` col3="ANDO"`)},
+	var expectArray = [][]string{
+		[]string{`"json1": "value1, value2"`, ` "json2": "value3, value4"`},
+		[]string{`"json1": 'value1, value2'`, ` "json2": "value3, value4"`, ` "json3": "value3, 'value4'"`},
 	}
 
-	for i, testCase := range testCaseArray {
-		ret := Split(testCase, []string{"AND", "OR", "(", ")"}, []rune{'"', '\''}, false)
-		if len(ret) != len(testCaseExpectArray[i]) {
-			t.Errorf("length not matched: %d vs %d", len(ret), len(testCaseExpectArray[i]))
-		} else {
-			for j := 0; j < len(ret); j++ {
-				if strings.Compare(string(ret[j]), string(testCaseExpectArray[i][j])) != 0 {
-					t.Errorf("not matched: %s vs %s", string(ret[j]), string(testCaseExpectArray[i][j]))
+	for index, testCase := range testCaseArray {
+		resultRunesSlice := Split(testCase, []string{","}, "\"")
+
+		if len(resultRunesSlice) == len(expectArray[index]) {
+			for index2, resultRunes := range resultRunesSlice {
+				if string(resultRunes) != expectArray[index][index2] {
+					t.Fatalf("not matched: %s vs %s", string(resultRunes), expectArray[index][index2])
 				}
 			}
+		} else {
+			t.Fatalf("not matched: `%s`: %v(%d) vs %v(%d)", testCaseArray[index], resultRunesSlice, len(resultRunesSlice), expectArray[index], len(expectArray[index]))
+		}
+	}
+}
+
+func TestStringUtil5(t *testing.T) {
+	var testCaseArray []string = []string{
+		`"json1": "value1, value2", "json2": "value3, value4"`,
+		`"json1": 'value1, value2', "json2": "value3, value4", "json3": "value3, 'value4'"`,
+	}
+	var expectArray = [][]string{
+		[]string{`"json1"`, ` "value1, value2"`, ` "json2"`, ` "value3, value4"`},
+		[]string{`"json1"`, ` 'value1`, ` value2'`, ` "json2"`, ` "value3, value4"`, ` "json3"`, ` "value3, 'value4'"`},
+	}
+
+	for index, testCase := range testCaseArray {
+		resultRunesSlice := Split(testCase, []string{",", ":"}, "\"")
+
+		if len(resultRunesSlice) == len(expectArray[index]) {
+			for index2, resultRunes := range resultRunesSlice {
+				if string(resultRunes) != expectArray[index][index2] {
+					t.Fatalf("not matched: %s vs %s", string(resultRunes), expectArray[index][index2])
+				}
+			}
+		} else {
+			t.Fatalf("not matched: `%s`: %v(%d) vs %v(%d)", testCaseArray[index], resultRunesSlice, len(resultRunesSlice), expectArray[index], len(expectArray[index]))
 		}
 	}
 }

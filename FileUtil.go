@@ -119,29 +119,39 @@ func IsExist(path string) bool {
 func IsFile(path string) bool {
 	var ret = false
 
-	if target, openErr := os.Open(path); openErr == nil {
-		defer target.Close()
-
-		if targetFileInfo, statErr := target.Stat(); statErr == nil {
-			ret = !(targetFileInfo.IsDir())
-		}
+	if targetFileInfo, openErr := os.Stat(path); openErr == nil {
+		ret = !(targetFileInfo.IsDir())
 	}
 
 	return ret
 }
 
+func IsFileByFileInfo(fileInfo os.FileInfo) bool {
+	return !fileInfo.IsDir()
+}
+
 func IsDir(path string) bool {
 	var ret = false
 
-	if target, openErr := os.Open(path); openErr == nil {
-		defer target.Close()
-
-		if targetFileInfo, statErr := target.Stat(); statErr == nil {
-			ret = targetFileInfo.IsDir()
-		}
+	if targetFileInfo, openErr := os.Stat(path); openErr == nil {
+		ret = targetFileInfo.IsDir()
 	}
 
 	return ret
+}
+
+func IsSymlink(path string) bool {
+	var ret = false
+
+	if targetFileInfo, openErr := os.Stat(path); openErr == nil {
+		ret = (targetFileInfo.Mode()&os.ModeSymlink == os.ModeSymlink)
+	}
+
+	return ret
+}
+
+func IsSymlinkByFileInfo(fileInfo os.FileInfo) bool {
+	return (fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink)
 }
 
 func GetFilesV(path string, allowExtensions ...string) []string {

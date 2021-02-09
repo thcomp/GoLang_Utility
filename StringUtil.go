@@ -86,83 +86,49 @@ const endSepText = 2
 const startInvalidSpaceStarter = 4
 const endInvalidSpaceStarter = 8
 
-func Split(originalText string, sepTextArray []string, invalidSpaceStarters []rune, caseSensitive bool) [][]rune {
-	var ret [][]rune
-	var originalTextRunes []rune = []rune(originalText)
-	var caseFixedOriginalTextRunes []rune
-	var caseFixedSepTextArray []string
-	var caseFixedInvalidSpaceStarters []rune
-	if caseSensitive {
-		caseFixedOriginalTextRunes = []rune(originalText)
-		caseFixedSepTextArray = sepTextArray
-		caseFixedInvalidSpaceStarters = invalidSpaceStarters
-	} else {
-		caseFixedOriginalTextRunes = []rune(strings.ToLower(originalText))
-		for _, sepText := range sepTextArray {
-			caseFixedSepTextArray = append(caseFixedSepTextArray, strings.ToLower(sepText))
-		}
-		caseFixedInvalidSpaceStarters = []rune(strings.ToLower(string(invalidSpaceStarters)))
-	}
-	var findPositionArray []int = make([]int, len(caseFixedOriginalTextRunes))
-	var openedInvalidSpace []bool = make([]bool, len(invalidSpaceStarters))
-	var openedInvalidSpaceCount = 0
+func Split(originalText string, sepTextSlice []string, invalidSpaceStarters ...string) []string {
+	ret := []string{}
+	startPosition := 0
+	invalidSpaceMap := map[string]int{}
 
-	for i := 0; i < len(caseFixedOriginalTextRunes); {
-		var increase = 1
+	for index := 0; index < len(originalText); {
+		incrementSize := 1
+		matchedInvalidSpaceStarter := false
 
-		for j, caseFixedInvalidSpaceStarter := range caseFixedInvalidSpaceStarters {
-			if caseFixedInvalidSpaceStarter == caseFixedOriginalTextRunes[i] {
-				if openedInvalidSpace[j] {
-					openedInvalidSpace[j] = false
-					findPositionArray[i] = endInvalidSpaceStarter
-					openedInvalidSpaceCount--
-				} else {
-					openedInvalidSpace[j] = true
-					findPositionArray[i] = startInvalidSpaceStarter
-					openedInvalidSpaceCount++
-				}
-				break
-			}
-		}
+		for _, invalidSpaceStarter := range invalidSpaceStarters {
+			if index+len(invalidSpaceStarter) < len(originalText) {
+				if originalText[index:index+len(invalidSpaceStarter)] == invalidSpaceStarter {
+					if _, exist := invalidSpaceMap[invalidSpaceStarter]; exist {
+						delete(invalidSpaceMap, invalidSpaceStarter)
+					} else {
+						invalidSpaceMap[invalidSpaceStarter] = index
+					}
 
-		if openedInvalidSpaceCount == 0 {
-			for _, caseFixedSepText := range caseFixedSepTextArray {
-				if strings.HasPrefix(string(caseFixedOriginalTextRunes[i:]), caseFixedSepText) {
-					findPositionArray[i] |= startSepText
-
-					caseFixedSepTextLen := len([]rune(caseFixedSepText))
-					findPositionArray[i+caseFixedSepTextLen-1] |= endSepText
-					increase = caseFixedSepTextLen
+					incrementSize = len(invalidSpaceStarter)
+					matchedInvalidSpaceStarter = true
 					break
 				}
 			}
 		}
 
-		i += increase
+		if !matchedInvalidSpaceStarter && len(invalidSpaceMap) == 0 {
+			for _, sepText := range sepTextSlice {
+				if index+len(sepText) < len(originalText) {
+					if originalText[index:index+len(sepText)] == sepText {
+						ret = append(ret, originalText[startPosition:index])
+						startPosition = index + len(sepText)
+						break
+					}
+				}
+			}
+		}
+
+		index += incrementSize
 	}
 
-	var startIndex = 0
-	for i, specify := range findPositionArray {
-		if (specify & startSepText) == startSepText {
-			tempAppendRunes := originalTextRunes[startIndex:i]
-			if len(tempAppendRunes) > 0 {
-				ret = append(ret, tempAppendRunes)
-			}
-			startIndex = i
-		}
-		if (specify & endSepText) == endSepText {
-			tempAppendRunes := originalTextRunes[startIndex : i+1]
-			if len(tempAppendRunes) > 0 {
-				ret = append(ret, tempAppendRunes)
-			}
-			startIndex = i + 1
-		}
-		if (specify & startInvalidSpaceStarter) == startInvalidSpaceStarter {
-		}
-		if (specify & endInvalidSpaceStarter) == endInvalidSpaceStarter {
-		}
+	if startPosition < len(originalText) {
+		ret = append(ret, originalText[startPosition:])
 	}
-	ret = append(ret, originalTextRunes[startIndex:])
 
 	return ret
 }

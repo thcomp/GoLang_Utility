@@ -148,10 +148,10 @@ func parseParameter(receiver interface{}) ([](*sParamTagInfo), []error) {
 					} else {
 						// name and value separated by ":" joint comma format
 						// ex. name:"file",init:1,desc:test,expect:"file|exist"
-						nameAndValueSlice := strings.Split(tagValue, ",")
+						nameAndValueSlice := Split(tagValue, []string{","}, "'")
 						for _, nameAndValue := range nameAndValueSlice {
 							nameAndValue = strings.Trim(nameAndValue, " \t")
-							nameValueSlice := strings.Split(nameAndValue, ":")
+							nameValueSlice := Split(nameAndValue, []string{":"}, "'")
 
 							if len(nameValueSlice) >= 2 {
 								switch nameValueSlice[0] {
