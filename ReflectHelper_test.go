@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 	//"time"
 )
 
@@ -18,6 +19,7 @@ type Data struct {
 	Value1 float32 `json:"value1"`
 	Value2 float64
 	Value3 string
+	Value4 time.Time
 }
 
 type LargeData struct {
@@ -34,6 +36,7 @@ type LargeData struct {
 	Value10 uint32
 	Value11 uint64
 	Value12 SmallData
+	Value13 time.Time
 }
 
 type DataIf interface {
@@ -56,10 +59,10 @@ func TestReflectHelper(t *testing.T) {
 	if refHelperForSmall.NumField() != 1 {
 		t.Error(`NumField is failed`)
 	}
-	if refHelper.NumField() != 4 {
+	if refHelper.NumField() != 5 {
 		t.Error(`NumField is failed`)
 	}
-	if refHelperForLarge.NumField() != 13 {
+	if refHelperForLarge.NumField() != 14 {
 		t.Error(`NumField is failed`)
 	}
 
@@ -87,7 +90,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForSmall.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForSmall.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -129,7 +132,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelper.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelper.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -142,6 +145,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelper.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelper.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 1:
@@ -167,7 +173,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelper.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelper.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -180,6 +186,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelper.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelper.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 2:
@@ -205,7 +214,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelper.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelper.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -218,6 +227,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelper.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelper.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 3:
@@ -243,7 +255,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if !refHelper.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelper.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -256,6 +268,50 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelper.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelper.IsTime(i) {
+				t.Error(`IsTime is failed`)
+			}
+			break
+		case 4:
+			if refHelper.IsBool(i) {
+				t.Error(`IsBool is failed`)
+			}
+			if refHelper.IsFloat32(i) {
+				t.Error(`IsFloat32 is failed`)
+			}
+			if refHelper.IsFloat64(i) {
+				t.Error(`IsFloat64 is failed`)
+			}
+			if refHelper.IsInt8(i) {
+				t.Error(`IsInt8 is failed`)
+			}
+			if refHelper.IsInt16(i) {
+				t.Error(`IsInt16 is failed`)
+			}
+			if refHelper.IsInt32(i) {
+				t.Error(`IsInt32 is failed`)
+			}
+			if refHelper.IsInt64(i) {
+				t.Error(`IsInt64 is failed`)
+			}
+			if refHelper.IsString(i) {
+				t.Error(`IsString is failed`)
+			}
+			if refHelper.IsUint8(i) {
+				t.Error(`IsUint8 is failed`)
+			}
+			if refHelper.IsUint16(i) {
+				t.Error(`IsUint16 is failed`)
+			}
+			if refHelper.IsUint32(i) {
+				t.Error(`IsUint32 is failed`)
+			}
+			if refHelper.IsUint64(i) {
+				t.Error(`IsUint64 is failed`)
+			}
+			if !refHelper.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		}
@@ -286,7 +342,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -299,6 +355,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 1:
@@ -324,7 +383,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -337,6 +396,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 2:
@@ -362,7 +424,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -375,6 +437,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 3:
@@ -400,7 +465,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if !refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -413,6 +478,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 4:
@@ -438,7 +506,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -451,6 +519,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 5:
@@ -476,7 +547,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -489,6 +560,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 6:
@@ -514,7 +588,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -527,6 +601,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 7:
@@ -552,7 +629,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -565,6 +642,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 8:
@@ -590,7 +670,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if !refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -603,6 +683,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 9:
@@ -628,7 +711,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -641,6 +724,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 10:
@@ -666,7 +752,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -679,6 +765,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 11:
@@ -704,7 +793,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -717,6 +806,9 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if !refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		case 12:
@@ -742,7 +834,7 @@ func TestReflectHelper(t *testing.T) {
 				t.Error(`IsInt64 is failed`)
 			}
 			if refHelperForLarge.IsString(i) {
-				t.Error(`IsInt64 is failed`)
+				t.Error(`IsString is failed`)
 			}
 			if refHelperForLarge.IsUint8(i) {
 				t.Error(`IsUint8 is failed`)
@@ -755,6 +847,50 @@ func TestReflectHelper(t *testing.T) {
 			}
 			if refHelperForLarge.IsUint64(i) {
 				t.Error(`IsUint64 is failed`)
+			}
+			if refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
+			}
+			break
+		case 13:
+			if refHelperForLarge.IsBool(i) {
+				t.Error(`IsBool is failed`)
+			}
+			if refHelperForLarge.IsFloat32(i) {
+				t.Error(`IsFloat32 is failed`)
+			}
+			if refHelperForLarge.IsFloat64(i) {
+				t.Error(`IsFloat64 is failed`)
+			}
+			if refHelperForLarge.IsInt8(i) {
+				t.Error(`IsInt8 is failed`)
+			}
+			if refHelperForLarge.IsInt16(i) {
+				t.Error(`IsInt16 is failed`)
+			}
+			if refHelperForLarge.IsInt32(i) {
+				t.Error(`IsInt32 is failed`)
+			}
+			if refHelperForLarge.IsInt64(i) {
+				t.Error(`IsInt64 is failed`)
+			}
+			if refHelperForLarge.IsString(i) {
+				t.Error(`IsString is failed`)
+			}
+			if refHelperForLarge.IsUint8(i) {
+				t.Error(`IsUint8 is failed`)
+			}
+			if refHelperForLarge.IsUint16(i) {
+				t.Error(`IsUint16 is failed`)
+			}
+			if refHelperForLarge.IsUint32(i) {
+				t.Error(`IsUint32 is failed`)
+			}
+			if refHelperForLarge.IsUint64(i) {
+				t.Error(`IsUint64 is failed`)
+			}
+			if !refHelperForLarge.IsTime(i) {
+				t.Error(`IsTime is failed`)
 			}
 			break
 		}

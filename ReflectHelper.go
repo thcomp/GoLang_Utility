@@ -4,43 +4,12 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type ReflectHelper struct {
 	mTargetValue     reflect.Value
 	mTargetInterface interface{}
-}
-
-type ReflectHelperIF interface {
-	NumField() int
-	InterfaceName() string
-	Name(index int) string
-	Tag(index int) reflect.StructTag
-	BoolValue(index int) bool
-	StringValue(index int) string
-	String(index int) string
-	IntValue(index int) int64
-	UintValue(index int) uint64
-	FloatValue(index int) float64
-
-	ValueKind(index int) reflect.Kind
-	IsBool(index int) bool
-	IsString(index int) bool
-	IsInt32(index int) bool
-	IsInt64(index int) bool
-	IsUint32(index int) bool
-	IsUint64(index int) bool
-	IsFloat32(index int) bool
-	IsFloat64(index int) bool
-
-	SetByName(name string, value interface{})
-	SetByIndex(index int, value interface{})
-	GetByName(name string) interface{}
-	GetByTagName(key string, name string) interface{}
-	GetByIndex(index int) interface{}
-
-	FindByName(name string) bool
-	Call(methodName string, values []reflect.Value) []reflect.Value
 }
 
 func NewReflectHelper(targetInterface interface{}) *ReflectHelper {
@@ -59,8 +28,21 @@ func (this *ReflectHelper) InterfaceName() string {
 	return reflect.TypeOf(this.mTargetInterface).Name()
 }
 
-func (this *ReflectHelper) Name(index int) string {
+func (this *ReflectHelper) FieldName(index int) string {
 	return this.mTargetValue.Type().Field(index).Name
+}
+
+func (this *ReflectHelper) FieldIndex(name string) int {
+	ret := -1
+
+	for i := 0; i < this.mTargetValue.NumField(); i++ {
+		if this.mTargetValue.Type().Field(i).Name == name {
+			ret = i
+			break
+		}
+	}
+
+	return ret
 }
 
 func (this *ReflectHelper) Tag(index int) reflect.StructTag {
@@ -108,6 +90,17 @@ func (this *ReflectHelper) UintValue(index int) uint64 {
 
 func (this *ReflectHelper) FloatValue(index int) float64 {
 	return this.mTargetValue.Field(index).Float()
+}
+
+func (this *ReflectHelper) TimeValue(index int) time.Time {
+	fieldInf := this.mTargetValue.Field(index).Interface()
+	ret, assertionOK := fieldInf.(time.Time)
+
+	if !assertionOK {
+		LogfE("fail to assertion: %v -> time.Time", fieldInf)
+	}
+
+	return ret
 }
 
 func (this *ReflectHelper) ValueKind(index int) reflect.Kind {
@@ -212,6 +205,16 @@ func (this *ReflectHelper) IsIntUint(index int) bool {
 
 func (this *ReflectHelper) IsNumber(index int) bool {
 	return this.IsInt(index) || this.IsUint(index) || this.IsFloat(index)
+}
+
+func (this *ReflectHelper) IsTime(index int) bool {
+	ret := false
+
+	if this.mTargetValue.Field(index).Kind() == reflect.Struct {
+		_, ret = this.mTargetValue.Field(index).Interface().(time.Time)
+	}
+
+	return ret
 }
 
 func (this *ReflectHelper) SetByName(name string, value interface{}) bool {

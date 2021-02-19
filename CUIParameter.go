@@ -211,7 +211,7 @@ func parseParameter(receiver interface{}) ([](*sParamTagInfo), []error) {
 					}
 
 					if len(paramInfo.Name) == 0 {
-						paramInfo.Name = reflectHelper.Name(i)
+						paramInfo.Name = reflectHelper.FieldName(i)
 					}
 
 					if tempError == nil {
