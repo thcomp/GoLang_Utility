@@ -229,7 +229,7 @@ func (this *ReflectHelper) SetByName(name string, value interface{}) bool {
 	return ret
 }
 
-func (this *ReflectHelper) SetByIndex(index int, valueInf interface{}, allowCastFlag int) bool {
+func (this *ReflectHelper) SetByIndex(index int, valueInf interface{}) bool {
 	var ret bool = false
 	var tempValue reflect.Value = this.mTargetValue.Field(index).Addr().Elem()
 
@@ -242,10 +242,6 @@ func (this *ReflectHelper) SetByIndex(index int, valueInf interface{}, allowCast
 		if tempValue.Kind() == v.Kind() {
 			tempValue.Set(v)
 			ret = true
-		} else {
-			if this.IsNumber(index) {
-
-			}
 		}
 	}
 
