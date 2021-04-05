@@ -2,6 +2,7 @@ package utility
 
 import (
 	"reflect"
+	"time"
 )
 
 type InterfaceHelper struct {
@@ -112,6 +113,32 @@ func (helper *InterfaceHelper) GetNumber() (float64, bool) {
 	return ret, matched
 }
 
+func (helper *InterfaceHelper) GetTime() (time.Time, bool) {
+	ret := time.Time{}
+	matched := false
+
+	switch helper.kind {
+	case reflect.Struct:
+		if tempRet, assertionOK := helper.value.Interface().(time.Time); assertionOK {
+			ret = tempRet
+			matched = true
+		}
+		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.Struct:
+			if tempRet, assertionOK := helper.ptrToValue.Interface().(time.Time); assertionOK {
+				ret = tempRet
+				matched = true
+			}
+			break
+		}
+		break
+	}
+
+	return ret, matched
+}
+
 func (helper *InterfaceHelper) GetNumberArray() ([]float64, bool) {
 	ret := []float64(nil)
 	matched := false
@@ -198,6 +225,37 @@ func (helper *InterfaceHelper) GetBoolArray() ([]bool, bool) {
 			matched = true
 			tempValue, _ := helper.GetBool()
 			ret = []bool{tempValue}
+		}
+		break
+	}
+
+	return ret, matched
+}
+
+func (helper *InterfaceHelper) GetTimeArray() ([]time.Time, bool) {
+	ret := []time.Time(nil)
+	matched := false
+
+	switch helper.kind {
+	case reflect.Array, reflect.Slice:
+		matched = true
+		for i := 0; i < helper.value.Len(); i++ {
+			tempInterface := helper.value.Slice(i, i+1).Interface()
+			tempHelper := NewInterfaceHelper(tempInterface)
+			if tempTime, matched := tempHelper.GetTime(); matched {
+				if ret == nil {
+					ret = []time.Time{}
+				}
+
+				ret = append(ret, tempTime)
+			}
+		}
+		break
+	default:
+		if helper.IsTime() {
+			matched = true
+			tempValue, _ := helper.GetTime()
+			ret = []time.Time{tempValue}
 		}
 		break
 	}
@@ -320,6 +378,25 @@ func (helper *InterfaceHelper) IsBool() bool {
 	return ret
 }
 
+func (helper *InterfaceHelper) IsTime() bool {
+	ret := false
+
+	switch helper.kind {
+	case reflect.Struct:
+		_, ret = helper.value.Interface().(time.Time)
+		break
+	case reflect.Ptr:
+		switch helper.ptrToKind {
+		case reflect.Struct:
+			_, ret = helper.ptrToValue.Interface().(time.Time)
+			break
+		}
+		break
+	}
+
+	return ret
+}
+
 func (helper *InterfaceHelper) IsArrayOrSlice() bool {
 	ret := false
 
@@ -360,6 +437,9 @@ func (helper *InterfaceHelper) Set(from interface{}) bool {
 		} else if helper.IsFloat() && fromInfHelper.IsFloat() {
 			value, _ := fromInfHelper.GetNumber()
 			helper.ptrToValue.SetFloat(value)
+		} else if helper.IsTime() && fromInfHelper.IsTime() {
+			value, _ := fromInfHelper.GetTime()
+			helper.ptrToValue.Set(reflect.ValueOf(value))
 		} else if helper.IsArrayOrSlice() && fromInfHelper.IsArrayOrSlice() {
 			ret = false
 		} else {
@@ -383,6 +463,9 @@ func (helper *InterfaceHelper) Set(from interface{}) bool {
 		} else if helper.IsFloat() && fromInfHelper.IsFloat() {
 			value, _ := fromInfHelper.GetNumber()
 			helper.value.SetFloat(value)
+		} else if helper.IsTime() && fromInfHelper.IsTime() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.value.Set(reflect.ValueOf(value))
 		} else if helper.IsArrayOrSlice() && fromInfHelper.IsArrayOrSlice() {
 			ret = false
 		} else {

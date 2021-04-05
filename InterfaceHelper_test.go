@@ -3,6 +3,7 @@ package utility
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func Test_value(t *testing.T) {
@@ -858,6 +859,51 @@ func Test_bool(t *testing.T) {
 	}
 }
 
+func Test_time(t *testing.T) {
+	value, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z07:00")
+	helper := NewInterfaceHelper(&value)
+
+	if helper.IsNumber() {
+		t.Fatalf("not match")
+	} else if helper.IsBool() {
+		t.Fatalf("not match")
+	} else if helper.IsFloat() {
+		t.Fatalf("not match")
+	} else if helper.IsInt() {
+		t.Fatalf("not match")
+	} else if helper.IsString() {
+		t.Fatalf("not match")
+	} else if helper.IsUint() {
+		t.Fatalf("not match")
+	} else if !helper.IsTime() {
+		t.Fatalf("not match")
+	}
+
+	if _, assertionOK := helper.GetNumber(); assertionOK {
+		t.Fatalf("not match")
+	} else if _, assertionOK := helper.GetBool(); assertionOK {
+		t.Fatalf("not match")
+	} else if _, assertionOK := helper.GetString(); assertionOK {
+		t.Fatalf("not match")
+	} else if _, assertionOK := helper.GetTime(); !assertionOK {
+		t.Fatalf("not match")
+	}
+
+	if _, assertionOK := helper.GetNumberArray(); assertionOK {
+		t.Fatalf("not match")
+	} else if _, assertionOK := helper.GetStringArray(); assertionOK {
+		t.Fatalf("not match")
+	} else if array, assertionOK := helper.GetTimeArray(); !assertionOK {
+		t.Fatalf("not match")
+	} else {
+		if len(array) != 1 {
+			t.Fatalf("not match")
+		} else if array[0] != value {
+			t.Fatalf("not match")
+		}
+	}
+}
+
 func Test_SetString(t *testing.T) {
 	value := "true"
 	helper := NewInterfaceHelper(&value)
@@ -1329,6 +1375,39 @@ func Test_SetUint(t *testing.T) {
 
 		if helper.Set(fromValue) {
 			t.Fatalf("cannot set value: %v", fromValue)
+		}
+	}
+}
+
+func Test_SetTime(t *testing.T) {
+	value, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z07:00")
+	helper := NewInterfaceHelper(&value)
+
+	{
+		fromValue := time.Now()
+
+		if !helper.Set(fromValue) {
+			t.Fatalf("can set value: %v", fromValue)
+		} else if getValue, ret := helper.GetTime(); !ret {
+			t.Fatalf("cannot get value")
+		} else if fromValue != getValue {
+			t.Fatalf("not matched: %v vs %v", fromValue, getValue)
+		}
+	}
+
+	{
+		fromValue := uint(10)
+
+		if helper.Set(fromValue) {
+			t.Fatalf("can set value: %v", fromValue)
+		}
+	}
+
+	{
+		fromValue := "11:12"
+
+		if helper.Set(fromValue) {
+			t.Fatalf("can set value: %v", fromValue)
 		}
 	}
 }
