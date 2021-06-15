@@ -101,7 +101,7 @@ func GetCUIParameter(receiver interface{}, debug bool) []error {
 
 				inputValue := reflect.ValueOf(paramInfo.inputValue)
 				inputValueIndirect := reflect.Indirect(inputValue)
-				LogfV("input value: %v, indirect: %v", inputValue, inputValueIndirect)
+				LogfV("param name: %s, input value: %v, indirect: %v", paramInfo.Name, inputValue, inputValueIndirect)
 
 				infHelper.Set(inputValueIndirect)
 
