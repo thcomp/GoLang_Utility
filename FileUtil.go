@@ -180,6 +180,9 @@ func GetFilesV(path string, allowExtensions ...string) []string {
 				ret = append(ret, childElement)
 			}
 		}
+
+		// deferではリリースが遅れてリソース枯渇が発生するので、明示的にも開放
+		target.Close()
 	}
 
 	return ret
@@ -213,6 +216,11 @@ func getFilesSub(target *os.File, allowExtensionMap map[string]bool) []string {
 								ret = append(ret, childElement)
 							}
 						}
+
+						// deferではリリースが遅れてリソース枯渇が発生するので、明示的にも開放
+						childTarget.Close()
+					} else {
+						LogfE("fail to open file: %s, %v", target.Name()+string(os.PathSeparator)+childFileInfo.Name(), openErr)
 					}
 				}
 			} else {
