@@ -23,6 +23,7 @@ type Logger struct {
 	LogLevel    int
 	initialized bool
 	outputFile  string
+	useStdOut   bool
 }
 
 const LogLevelE = 1
@@ -67,6 +68,10 @@ func ChangeLogLevelByText(logLevelText string) {
 
 func ChangeOutput(outputFile string) {
 	gLogger.outputFile = outputFile
+}
+
+func UseStdout(useStdout bool) {
+	gLogger.UseStdout(useStdout)
 }
 
 func LogV(content string) {
@@ -274,7 +279,11 @@ func (this *Logger) LogfE(format string, args ...interface{}) {
 
 func (this *Logger) output(format string, args ...interface{}) {
 	if len(this.outputFile) == 0 {
-		log.Printf(format, args...)
+		if this.useStdOut {
+			fmt.Printf(format, args...)
+		} else {
+			log.Printf(format, args...)
+		}
 	} else {
 		if desc, openErr := os.OpenFile(this.outputFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644); openErr == nil {
 			defer desc.Close()
@@ -286,4 +295,9 @@ func (this *Logger) output(format string, args ...interface{}) {
 func (this *Logger) ChangeOutput(outputFile string) {
 	this.logInit()
 	this.outputFile = outputFile
+}
+
+func (this *Logger) UseStdout(useStdout bool) {
+	this.logInit()
+	this.useStdOut = useStdout
 }
