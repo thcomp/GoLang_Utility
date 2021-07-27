@@ -1,9 +1,11 @@
 package utility
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -356,6 +358,80 @@ func PrepareOutputFilepath(inputTopFolderpath, inputFilepath, outputTopFolderpat
 	newFileParentFolder := ret[0 : len(ret)-len(filepath.Base(ret))]
 	if !IsExist(newFileParentFolder) {
 		os.MkdirAll(newFileParentFolder, 0755)
+	}
+
+	return ret
+}
+
+func Open(filePath string) (*os.File, error) {
+	newFilepath := ExchangePath(filePath)
+	return os.Open(newFilepath)
+}
+
+func OpenFile(filePath string, flag int, perm os.FileMode) (*os.File, error) {
+	newFilepath := ExchangePath(filePath)
+	return os.OpenFile(newFilepath, flag, perm)
+}
+
+func ReadFile(filePath string) ([]byte, error) {
+	newFilepath := ExchangePath(filePath)
+	return ioutil.ReadFile(newFilepath)
+}
+
+func ExchangePath(originalPath string) string {
+	oldnewPathSeparaters := []byte{}
+
+	switch runtime.GOOS {
+	case "windows":
+		oldnewPathSeparaters = append(oldnewPathSeparaters, '/')
+		oldnewPathSeparaters = append(oldnewPathSeparaters, '\\')
+		break
+	case "darwin", "linux", "freebsd":
+		oldnewPathSeparaters = append(oldnewPathSeparaters, '/')
+		oldnewPathSeparaters = append(oldnewPathSeparaters, '\\')
+		break
+	}
+
+	return exchangePath(originalPath, oldnewPathSeparaters)
+}
+
+func exchangePath(originalPath string, oldnewPathSeparaters []byte) string {
+	ret := ""
+	absolute := false
+
+	if len(oldnewPathSeparaters) >= 2 {
+		if strings.Index(originalPath, string(oldnewPathSeparaters[0])) >= 0 {
+			if strings.HasPrefix(originalPath, string(oldnewPathSeparaters[0])) {
+				absolute = true
+
+				if oldnewPathSeparaters[0] == '\\' {
+					// set default drive letter
+					originalPath = "/mnt/c" + originalPath
+				} else if strings.HasPrefix(originalPath, "/mnt/") {
+					originalPath = string(originalPath[len("/mnt/")]) + ":" + originalPath[len("/mnt/")+1:]
+				}
+			} else if len(originalPath) > 1 && strings.HasPrefix(originalPath[1:], ":") {
+				absolute = true
+
+				originalPath = strings.ToLower(originalPath[0:1]) + originalPath[1:]
+				originalPath = strings.Replace(originalPath, ":", "", 1)
+				originalPath = "/mnt/" + originalPath
+			}
+		} else if strings.Index(originalPath, string(oldnewPathSeparaters[1])) >= 0 {
+			// nop
+			ret = originalPath
+		} else {
+			// current folder's file
+		}
+
+		if len(ret) == 0 {
+			if absolute {
+				tempPath := strings.Replace(originalPath, string(oldnewPathSeparaters[0]), string(oldnewPathSeparaters[1]), -1)
+				ret = tempPath
+			} else {
+				ret = strings.Replace(originalPath, string(oldnewPathSeparaters[0]), string(oldnewPathSeparaters[1]), -1)
+			}
+		}
 	}
 
 	return ret

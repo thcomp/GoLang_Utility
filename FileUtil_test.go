@@ -289,3 +289,83 @@ func TestGetParent(t *testing.T) {
 		}
 	}
 }
+
+func Test_exchangePath(t *testing.T) {
+	type TestData struct {
+		OriginalFilepath     string
+		ExpectFilepath       string
+		OldNewPathSeparaters []byte
+	}
+
+	testDataArray := []TestData{
+		{
+			OriginalFilepath:     "C:\\Windows\\system\\drivers\\log.txt",
+			ExpectFilepath:       "/mnt/c/Windows/system/drivers/log.txt",
+			OldNewPathSeparaters: []byte{'\\', '/'},
+		},
+		{
+			OriginalFilepath:     "\\Windows\\system\\drivers\\log.txt",
+			ExpectFilepath:       "/mnt/c/Windows/system/drivers/log.txt",
+			OldNewPathSeparaters: []byte{'\\', '/'},
+		},
+		{
+			OriginalFilepath:     "/mnt/c/Windows/system/drivers/log.txt",
+			ExpectFilepath:       "c:\\Windows\\system\\drivers\\log.txt",
+			OldNewPathSeparaters: []byte{'/', '\\'},
+		},
+
+		{
+			OriginalFilepath:     "C:\\Windows\\system\\drivers\\log.txt",
+			ExpectFilepath:       "C:\\Windows\\system\\drivers\\log.txt",
+			OldNewPathSeparaters: []byte{'/', '\\'},
+		},
+		{
+			OriginalFilepath:     "\\Windows\\system\\drivers\\log.txt",
+			ExpectFilepath:       "\\Windows\\system\\drivers\\log.txt",
+			OldNewPathSeparaters: []byte{'/', '\\'},
+		},
+		{
+			OriginalFilepath:     "/mnt/c/Windows/system/drivers/log.txt",
+			ExpectFilepath:       "/mnt/c/Windows/system/drivers/log.txt",
+			OldNewPathSeparaters: []byte{'\\', '/'},
+		},
+
+		{
+			OriginalFilepath:     "system\\drivers\\log.txt",
+			ExpectFilepath:       "system/drivers/log.txt",
+			OldNewPathSeparaters: []byte{'\\', '/'},
+		},
+		{
+			OriginalFilepath:     ".\\system\\drivers\\log.txt",
+			ExpectFilepath:       "./system/drivers/log.txt",
+			OldNewPathSeparaters: []byte{'\\', '/'},
+		},
+		{
+			OriginalFilepath:     "system/drivers/log.txt",
+			ExpectFilepath:       "system\\drivers\\log.txt",
+			OldNewPathSeparaters: []byte{'/', '\\'},
+		},
+		{
+			OriginalFilepath:     "./system/drivers/log.txt",
+			ExpectFilepath:       ".\\system\\drivers\\log.txt",
+			OldNewPathSeparaters: []byte{'/', '\\'},
+		},
+		{
+			OriginalFilepath:     "..\\system\\drivers\\log.txt",
+			ExpectFilepath:       "../system/drivers/log.txt",
+			OldNewPathSeparaters: []byte{'\\', '/'},
+		},
+		{
+			OriginalFilepath:     "../system/drivers/log.txt",
+			ExpectFilepath:       "..\\system\\drivers\\log.txt",
+			OldNewPathSeparaters: []byte{'/', '\\'},
+		},
+	}
+
+	for index, testData := range testDataArray {
+		result := exchangePath(testData.OriginalFilepath, testData.OldNewPathSeparaters)
+		if testData.ExpectFilepath != result {
+			t.Fatalf("%d: not matched, %s to %s(expect: %s)", index, testData.OriginalFilepath, result, testData.ExpectFilepath)
+		}
+	}
+}
