@@ -387,8 +387,8 @@ func ExchangePath(originalPath string) string {
 		oldnewPathSeparaters = append(oldnewPathSeparaters, '\\')
 		break
 	case "darwin", "linux", "freebsd":
-		oldnewPathSeparaters = append(oldnewPathSeparaters, '/')
 		oldnewPathSeparaters = append(oldnewPathSeparaters, '\\')
+		oldnewPathSeparaters = append(oldnewPathSeparaters, '/')
 		break
 	}
 
