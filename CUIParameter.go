@@ -258,25 +258,29 @@ func isValidStringParameter(strValue string, expect string) error {
 	for _, expectItem := range expectItems {
 		expectItem = strings.ToLower(strings.Trim(expectItem, " \t"))
 		if expectItem == CUIParamExpectFile {
-			if !IsExist(strValue) {
+			exchangedStrValue := ExchangePath(strValue)
+			if !IsExist(exchangedStrValue) {
 				expectFileAndNotExist = true
-			} else if IsDir(strValue) {
+			} else if IsDir(exchangedStrValue) {
 				ret = fmt.Errorf("expect file, but it is folder: '%s'", strValue)
 				break
 			}
 		} else if expectItem == CUIParamExpectFolder {
-			if !IsExist(strValue) {
+			exchangedStrValue := ExchangePath(strValue)
+			if !IsExist(exchangedStrValue) {
 				expectFolderAndNotExist = true
-			} else if IsFile(strValue) {
+			} else if IsFile(exchangedStrValue) {
 				ret = fmt.Errorf("expect folder, but it is file: '%s'", strValue)
 				break
 			}
 		} else if expectItem == CUIParamExpectExist {
-			if !IsExist(strValue) {
+			exchangedStrValue := ExchangePath(strValue)
+			if !IsExist(exchangedStrValue) {
 				needExistButNotExist = true
 			}
 		} else if expectItem == CUIParamExpectNotExist {
-			if IsExist(strValue) {
+			exchangedStrValue := ExchangePath(strValue)
+			if IsExist(exchangedStrValue) {
 				needNotExistButExist = true
 			}
 		} else if strings.HasPrefix(expectItem, CUIParamExpectIn) && strings.HasSuffix(expectItem, ")") {
