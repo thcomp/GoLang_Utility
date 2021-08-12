@@ -330,3 +330,453 @@ func ParseNumberRange(str string) (value *RangeValue, retErr error) {
 
 	return value, retErr
 }
+
+var sHalfKanaToKana = map[string]string{
+	"ｧ":  "ァ",
+	"ｨ":  "ィ",
+	"ｩ":  "ゥ",
+	"ｪ":  "ェ",
+	"ｫ":  "ォ",
+	"ｬ":  "ャ",
+	"ｭ":  "ュ",
+	"ｮ":  "ョ",
+	"ｯ":  "ッ",
+	"ｱ":  "ア",
+	"ｲ":  "イ",
+	"ｳ":  "ウ",
+	"ｴ":  "エ",
+	"ｵ":  "オ",
+	"ｶ":  "カ",
+	"ｷ":  "キ",
+	"ｸ":  "ク",
+	"ｹ":  "ケ",
+	"ｺ":  "コ",
+	"ｻ":  "サ",
+	"ｼ":  "シ",
+	"ｽ":  "ス",
+	"ｾ":  "セ",
+	"ｿ":  "ソ",
+	"ﾀ":  "タ",
+	"ﾁ":  "チ",
+	"ﾂ":  "ツ",
+	"ﾃ":  "テ",
+	"ﾄ":  "ト",
+	"ﾅ":  "ナ",
+	"ﾆ":  "ニ",
+	"ﾇ":  "ヌ",
+	"ﾈ":  "ネ",
+	"ﾉ":  "ノ",
+	"ﾊ":  "ハ",
+	"ﾋ":  "ヒ",
+	"ﾌ":  "フ",
+	"ﾍ":  "ヘ",
+	"ﾎ":  "ホ",
+	"ﾏ":  "マ",
+	"ﾐ":  "ミ",
+	"ﾑ":  "ム",
+	"ﾒ":  "メ",
+	"ﾓ":  "モ",
+	"ﾔ":  "ヤ",
+	"ﾕ":  "ユ",
+	"ﾖ":  "ヨ",
+	"ﾗ":  "ラ",
+	"ﾘ":  "リ",
+	"ﾙ":  "ル",
+	"ﾚ":  "レ",
+	"ﾛ":  "ロ",
+	"ﾜ":  "ワ",
+	"ｦ":  "ヲ",
+	"ﾝ":  "ン",
+	"ｶﾞ": "ガ",
+	"ｷﾞ": "ギ",
+	"ｸﾞ": "グ",
+	"ｹﾞ": "ゲ",
+	"ｺﾞ": "ゴ",
+	"ｻﾞ": "ザ",
+	"ｼﾞ": "ジ",
+	"ｽﾞ": "ズ",
+	"ｾﾞ": "ゼ",
+	"ｿﾞ": "ゾ",
+	"ﾀﾞ": "ダ",
+	"ﾁﾞ": "ヂ",
+	"ﾂﾞ": "ヅ",
+	"ﾃﾞ": "デ",
+	"ﾄﾞ": "ド",
+	"ﾊﾞ": "バ",
+	"ﾋﾞ": "ビ",
+	"ﾌﾞ": "ブ",
+	"ﾍﾞ": "ベ",
+	"ﾎﾞ": "ボ",
+	"ﾊﾟ": "パ",
+	"ﾋﾟ": "ピ",
+	"ﾌﾟ": "プ",
+	"ﾍﾟ": "ペ",
+	"ﾎﾟ": "ポ",
+}
+
+var sNFDtoNFC = map[string]string{
+	"カ゛": "ガ",
+	"キ゛": "ギ",
+	"ク゛": "グ",
+	"ケ゛": "ゲ",
+	"コ゛": "ゴ",
+	"サ゛": "ザ",
+	"シ゛": "ジ",
+	"ス゛": "ズ",
+	"セ゛": "ゼ",
+	"ソ゛": "ゾ",
+	"タ゛": "ダ",
+	"チ゛": "ヂ",
+	"ツ゛": "ヅ",
+	"テ゛": "デ",
+	"ト゛": "ド",
+	"ハ゛": "バ",
+	"ヒ゛": "ビ",
+	"フ゛": "ブ",
+	"ヘ゛": "ベ",
+	"ホ゛": "ボ",
+	"ハ゜": "パ",
+	"ヒ゜": "ピ",
+	"フ゜": "プ",
+	"ヘ゜": "ペ",
+	"ホ゜": "ポ",
+}
+
+var sNFCtoNFD = map[string]string{
+	"ガ": "カ゛",
+	"ギ": "キ゛",
+	"グ": "ク゛",
+	"ゲ": "ケ゛",
+	"ゴ": "コ゛",
+	"ザ": "サ゛",
+	"ジ": "シ゛",
+	"ズ": "ス゛",
+	"ゼ": "セ゛",
+	"ゾ": "ソ゛",
+	"ダ": "タ゛",
+	"ヂ": "チ゛",
+	"ヅ": "ツ゛",
+	"デ": "テ゛",
+	"ド": "ト゛",
+	"バ": "ハ゛",
+	"ビ": "ヒ゛",
+	"ブ": "フ゛",
+	"ベ": "ヘ゛",
+	"ボ": "ホ゛",
+	"パ": "ハ゜",
+	"ピ": "ヒ゜",
+	"プ": "フ゜",
+	"ペ": "ヘ゜",
+	"ポ": "ホ゜",
+}
+
+var sHalfAlphabetToAlphabet = map[string]string{
+	"A": "Ａ",
+	"B": "Ｂ",
+	"C": "Ｃ",
+	"D": "Ｄ",
+	"E": "Ｅ",
+	"F": "Ｆ",
+	"G": "Ｇ",
+	"H": "Ｈ",
+	"I": "Ｉ",
+	"J": "Ｊ",
+	"K": "Ｋ",
+	"L": "Ｌ",
+	"M": "Ｍ",
+	"N": "Ｎ",
+	"O": "Ｏ",
+	"P": "Ｐ",
+	"Q": "Ｑ",
+	"R": "Ｒ",
+	"S": "Ｓ",
+	"T": "Ｔ",
+	"U": "Ｕ",
+	"V": "Ｖ",
+	"W": "Ｗ",
+	"X": "Ｘ",
+	"Y": "Ｙ",
+	"Z": "Ｚ",
+	"a": "ａ",
+	"b": "ｂ",
+	"c": "ｃ",
+	"d": "ｄ",
+	"e": "ｅ",
+	"f": "ｆ",
+	"g": "ｇ",
+	"h": "ｈ",
+	"i": "ｉ",
+	"j": "ｊ",
+	"k": "ｋ",
+	"l": "ｌ",
+	"m": "ｍ",
+	"n": "ｎ",
+	"o": "ｏ",
+	"p": "ｐ",
+	"q": "ｑ",
+	"r": "ｒ",
+	"s": "ｓ",
+	"t": "ｔ",
+	"u": "ｕ",
+	"v": "ｖ",
+	"w": "ｗ",
+	"x": "ｘ",
+	"y": "ｙ",
+	"z": "ｚ",
+}
+
+var sAlphabetToHalfAlphabet = map[string]string{
+	"Ａ": "A",
+	"Ｂ": "B",
+	"Ｃ": "C",
+	"Ｄ": "D",
+	"Ｅ": "E",
+	"Ｆ": "F",
+	"Ｇ": "G",
+	"Ｈ": "H",
+	"Ｉ": "I",
+	"Ｊ": "J",
+	"Ｋ": "K",
+	"Ｌ": "L",
+	"Ｍ": "M",
+	"Ｎ": "N",
+	"Ｏ": "O",
+	"Ｐ": "P",
+	"Ｑ": "Q",
+	"Ｒ": "R",
+	"Ｓ": "S",
+	"Ｔ": "T",
+	"Ｕ": "U",
+	"Ｖ": "V",
+	"Ｗ": "W",
+	"Ｘ": "X",
+	"Ｙ": "Y",
+	"Ｚ": "Z",
+	"ａ": "a",
+	"ｂ": "b",
+	"ｃ": "c",
+	"ｄ": "d",
+	"ｅ": "e",
+	"ｆ": "f",
+	"ｇ": "g",
+	"ｈ": "h",
+	"ｉ": "i",
+	"ｊ": "j",
+	"ｋ": "k",
+	"ｌ": "l",
+	"ｍ": "m",
+	"ｎ": "n",
+	"ｏ": "o",
+	"ｐ": "p",
+	"ｑ": "q",
+	"ｒ": "r",
+	"ｓ": "s",
+	"ｔ": "t",
+	"ｕ": "u",
+	"ｖ": "v",
+	"ｗ": "w",
+	"ｘ": "x",
+	"ｙ": "y",
+	"ｚ": "z",
+}
+
+var sHalfNumberToNumber = map[string]string{
+	"0": "０",
+	"1": "１",
+	"2": "２",
+	"3": "３",
+	"4": "４",
+	"5": "５",
+	"6": "６",
+	"7": "７",
+	"8": "８",
+	"9": "９",
+}
+
+var sNumberToHalfNumber = map[string]string{
+	"０": "0",
+	"１": "1",
+	"２": "2",
+	"３": "3",
+	"４": "4",
+	"５": "5",
+	"６": "6",
+	"７": "7",
+	"８": "8",
+	"９": "9",
+}
+
+var sHalfSymbolToSymbol = map[string]string{
+	"!":  "！",
+	"\"": "“",
+	"#":  "＃",
+	"$":  "＄",
+	"%":  "％",
+	"&":  "＆",
+	"'":  "’",
+	"(":  "（",
+	")":  "）",
+	"=":  "＝",
+	"-":  "—",
+	"^":  "＾",
+	"~":  "～",
+	"|":  "｜",
+	"\\": "￥",
+	"`":  "‘",
+	"@":  "＠",
+	"[":  "［",
+	"{":  "｛",
+	"+":  "＋",
+	";":  "；",
+	"*":  "＊",
+	":":  "：",
+	"]":  "］",
+	"}":  "｝",
+	",":  "，",
+	"<":  "＜",
+	".":  "．",
+	">":  "＞",
+	"/":  "／",
+	"?":  "？",
+	"_":  "＿",
+}
+
+var sSymbolToHalfSymbol = map[string]string{
+	"！": "!",
+	"“": "\"",
+	"”": "\"",
+	"＃": "#",
+	"＄": "$",
+	"％": "%",
+	"＆": "&",
+	"’": "'",
+	"（": "(",
+	"）": ")",
+	"＝": "=",
+	"—": "-",
+	"＾": "^",
+	"～": "~",
+	"｜": "|",
+	"￥": "\\",
+	"‘": "`",
+	"＠": "@",
+	"「": "[",
+	"［": "[",
+	"【": "[",
+	"『": "[",
+	"｛": "{",
+	"＋": "+",
+	"；": ";",
+	"＊": "*",
+	"：": ":",
+	"」": "]",
+	"］": "]",
+	"】": "]",
+	"』": "]",
+	"｝": "}",
+	"，": ",",
+	"＜": "<",
+	"．": ".",
+	"＞": ">",
+	"／": "/",
+	"？": "?",
+	"＿": "_",
+}
+
+func ExchangeHalfKanaToKana(originalText string) string {
+	ret := originalText
+
+	for halfKana, kana := range sHalfKanaToKana {
+		ret = strings.Replace(ret, halfKana, kana, -1)
+	}
+
+	return ret
+}
+
+func ExchangeNFDtoNFC(originalText string) string {
+	ret := originalText
+
+	for nfdStr, nfcStr := range sNFDtoNFC {
+		ret = strings.Replace(ret, nfdStr, nfcStr, -1)
+	}
+
+	return ret
+}
+
+func ExchangeNFCtoNFD(originalText string) string {
+	ret := originalText
+
+	for nfcStr, nfdStr := range sNFCtoNFD {
+		ret = strings.Replace(ret, nfcStr, nfdStr, -1)
+	}
+
+	return ret
+}
+
+func ExchangeHalfNumberToNumber(originalText string) string {
+	ret := originalText
+
+	for halfNum, num := range sHalfNumberToNumber {
+		ret = strings.Replace(ret, halfNum, num, -1)
+	}
+
+	return ret
+}
+
+func ExchangeNumberToHalfNumber(originalText string) string {
+	ret := originalText
+
+	for num, halfNum := range sNumberToHalfNumber {
+		ret = strings.Replace(ret, num, halfNum, -1)
+	}
+
+	return ret
+}
+
+func ExchangeHalfAlphabetToAlphabet(originalText string) string {
+	ret := originalText
+
+	for halfNum, num := range sHalfAlphabetToAlphabet {
+		ret = strings.Replace(ret, halfNum, num, -1)
+	}
+
+	return ret
+}
+
+func ExchangeAlphabetToHalfAlphabet(originalText string) string {
+	ret := originalText
+
+	for num, halfNum := range sAlphabetToHalfAlphabet {
+		ret = strings.Replace(ret, num, halfNum, -1)
+	}
+
+	return ret
+}
+
+func ExchangeHalfSpaceToSpace(originalText string) string {
+	return strings.Replace(originalText, " ", "　", -1)
+}
+
+func ExchangeSpaceToHalfSpace(originalText string) string {
+	return strings.Replace(originalText, "　", " ", -1)
+}
+
+func ExchangeHalfSymbolToSymbol(originalText string) string {
+	ret := originalText
+
+	for halfSymbol, symbol := range sHalfSymbolToSymbol {
+		ret = strings.Replace(ret, halfSymbol, symbol, -1)
+	}
+
+	return ret
+}
+
+func ExchangeSymbolToHalfSymbol(originalText string) string {
+	ret := originalText
+
+	for symbol, halfSymbol := range sSymbolToHalfSymbol {
+		ret = strings.Replace(ret, symbol, halfSymbol, -1)
+	}
+
+	return ret
+}
