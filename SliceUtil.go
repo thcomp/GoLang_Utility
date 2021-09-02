@@ -1,6 +1,10 @@
 package utility
 
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+	"strconv"
+)
 
 func RemoveSliceItem(slice interface{}, position int) (interface{}, bool) {
 	retSlice := interface{}(nil)
@@ -25,4 +29,54 @@ func RemoveSliceItem(slice interface{}, position int) (interface{}, bool) {
 	}
 
 	return retSlice, ret
+}
+
+func ToIntSlice(fromInterface interface{}) (ret []int, retErr error) {
+	ret = []int{}
+
+	if fromInterface == nil {
+		// no work
+	} else {
+		infHelper := NewInterfaceHelper(fromInterface)
+
+		if infHelper.IsArrayOrSlice() {
+			if float64Slice, matched := infHelper.GetNumberArray(); matched {
+				for _, float64Value := range float64Slice {
+					ret = append(ret, int(float64Value))
+				}
+			} else if stringSlice, matched := infHelper.GetStringArray(); matched {
+				for _, stringValue := range stringSlice {
+					if float64Value, parseErr := strconv.ParseFloat(stringValue, 64); parseErr == nil {
+						ret = append(ret, int(float64Value))
+					} else if intValue, parseErr := strconv.ParseInt(stringValue, 10, 64); parseErr == nil {
+						ret = append(ret, int(intValue))
+					} else if intHexValue, parseErr := strconv.ParseInt(stringValue, 16, 64); parseErr == nil {
+						ret = append(ret, int(intHexValue))
+					} else {
+						LogfE("not support string: %s", stringValue)
+					}
+				}
+			} else {
+				retErr = fmt.Errorf("not support type: %v", fromInterface)
+			}
+		} else if infHelper.IsNumber() {
+			value, _ := infHelper.GetNumber()
+			ret = append(ret, int(value))
+		} else if infHelper.IsString() {
+			stringValue, _ := infHelper.GetString()
+			if float64Value, parseErr := strconv.ParseFloat(stringValue, 64); parseErr == nil {
+				ret = append(ret, int(float64Value))
+			} else if intValue, parseErr := strconv.ParseInt(stringValue, 10, 64); parseErr == nil {
+				ret = append(ret, int(intValue))
+			} else if intHexValue, parseErr := strconv.ParseInt(stringValue, 16, 64); parseErr == nil {
+				ret = append(ret, int(intHexValue))
+			} else {
+				retErr = fmt.Errorf("not support string: %s", stringValue)
+			}
+		} else {
+			retErr = fmt.Errorf("not support type: %v", fromInterface)
+		}
+	}
+
+	return
 }
