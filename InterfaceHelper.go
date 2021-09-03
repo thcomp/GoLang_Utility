@@ -147,7 +147,7 @@ func (helper *InterfaceHelper) GetNumberArray() ([]float64, bool) {
 	case reflect.Array, reflect.Slice:
 		matched = true
 		for i := 0; i < helper.value.Len(); i++ {
-			tempInterface := helper.value.Slice(i, i+1).Interface()
+			tempInterface := helper.value.Index(i).Interface()
 			tempHelper := NewInterfaceHelper(tempInterface)
 			if tempFloat, matched := tempHelper.GetNumber(); matched {
 				if ret == nil {
@@ -178,7 +178,7 @@ func (helper *InterfaceHelper) GetStringArray() ([]string, bool) {
 	case reflect.Array, reflect.Slice:
 		matched = true
 		for i := 0; i < helper.value.Len(); i++ {
-			tempInterface := helper.value.Slice(i, i+1).Interface()
+			tempInterface := helper.value.Index(i).Interface()
 			tempHelper := NewInterfaceHelper(tempInterface)
 			if tempString, matched := tempHelper.GetString(); matched {
 				if ret == nil {
@@ -209,7 +209,7 @@ func (helper *InterfaceHelper) GetBoolArray() ([]bool, bool) {
 	case reflect.Array, reflect.Slice:
 		matched = true
 		for i := 0; i < helper.value.Len(); i++ {
-			tempInterface := helper.value.Slice(i, i+1).Interface()
+			tempInterface := helper.value.Index(i).Interface()
 			tempHelper := NewInterfaceHelper(tempInterface)
 			if tempBool, matched := tempHelper.GetBool(); matched {
 				if ret == nil {
@@ -240,7 +240,7 @@ func (helper *InterfaceHelper) GetTimeArray() ([]time.Time, bool) {
 	case reflect.Array, reflect.Slice:
 		matched = true
 		for i := 0; i < helper.value.Len(); i++ {
-			tempInterface := helper.value.Slice(i, i+1).Interface()
+			tempInterface := helper.value.Index(i1).Interface()
 			tempHelper := NewInterfaceHelper(tempInterface)
 			if tempTime, matched := tempHelper.GetTime(); matched {
 				if ret == nil {
