@@ -240,7 +240,7 @@ func (helper *InterfaceHelper) GetTimeArray() ([]time.Time, bool) {
 	case reflect.Array, reflect.Slice:
 		matched = true
 		for i := 0; i < helper.value.Len(); i++ {
-			tempInterface := helper.value.Index(i1).Interface()
+			tempInterface := helper.value.Index(i).Interface()
 			tempHelper := NewInterfaceHelper(tempInterface)
 			if tempTime, matched := tempHelper.GetTime(); matched {
 				if ret == nil {
