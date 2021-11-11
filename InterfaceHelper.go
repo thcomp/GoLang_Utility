@@ -263,6 +263,30 @@ func (helper *InterfaceHelper) GetTimeArray() ([]time.Time, bool) {
 	return ret, matched
 }
 
+func (helper *InterfaceHelper) GetInterfaceArray() ([]interface{}, bool) {
+	ret := []interface{}(nil)
+	matched := false
+
+	switch helper.kind {
+	case reflect.Array, reflect.Slice:
+		matched = true
+		for i := 0; i < helper.value.Len(); i++ {
+			tempInterface := helper.value.Index(i).Interface()
+			if ret == nil {
+				ret = []interface{}{}
+			}
+
+			ret = append(ret, tempInterface)
+		}
+		break
+	default:
+		ret = []interface{}{helper.value.Interface()}
+		break
+	}
+
+	return ret, matched
+}
+
 func (helper *InterfaceHelper) GetKind() reflect.Kind {
 	ret := helper.kind
 

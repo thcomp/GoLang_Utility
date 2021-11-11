@@ -80,3 +80,25 @@ func ToIntSlice(fromInterface interface{}) (ret []int, retErr error) {
 
 	return
 }
+
+func ToInterfaceSlice(fromInterface interface{}) (ret []interface{}, retErr error) {
+	ret = []interface{}{}
+
+	if fromInterface == nil {
+		// no work
+	} else {
+		infHelper := NewInterfaceHelper(fromInterface)
+
+		if infHelper.IsArrayOrSlice() {
+			if interfaceSlice, matched := infHelper.GetInterfaceArray(); matched {
+				ret = interfaceSlice
+			} else {
+				retErr = fmt.Errorf("not support type: %v", fromInterface)
+			}
+		} else {
+			ret = append(ret, fromInterface)
+		}
+	}
+
+	return
+}
