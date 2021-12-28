@@ -365,17 +365,29 @@ func PrepareOutputFilepath(inputTopFolderpath, inputFilepath, outputTopFolderpat
 
 func Open(filePath string) (*os.File, error) {
 	newFilepath := ExchangePath(filePath)
-	return os.Open(newFilepath)
+	if newFilepath2, exist := GetRealFilepath(newFilepath, false, true); exist {
+		return os.Open(newFilepath2)
+	} else {
+		return os.Open(newFilepath)
+	}
 }
 
 func OpenFile(filePath string, flag int, perm os.FileMode) (*os.File, error) {
 	newFilepath := ExchangePath(filePath)
-	return os.OpenFile(newFilepath, flag, perm)
+	if newFilepath2, exist := GetRealFilepath(newFilepath, false, true); exist {
+		return os.OpenFile(newFilepath2, flag, perm)
+	} else {
+		return os.OpenFile(newFilepath, flag, perm)
+	}
 }
 
 func ReadFile(filePath string) ([]byte, error) {
 	newFilepath := ExchangePath(filePath)
-	return ioutil.ReadFile(newFilepath)
+	if newFilepath2, exist := GetRealFilepath(newFilepath, false, true); exist {
+		return ioutil.ReadFile(newFilepath2)
+	} else {
+		return ioutil.ReadFile(newFilepath)
+	}
 }
 
 func ExchangePath(originalPath string) string {
@@ -435,4 +447,54 @@ func exchangePath(originalPath string, oldnewPathSeparaters []byte) string {
 	}
 
 	return ret
+}
+
+func GetRealFilepath(filePath string, ignoreNameCase, ignoreExtCase bool) (outputFilepath string, exist bool) {
+	outputFilepath = filePath
+
+	if ignoreNameCase || ignoreExtCase {
+		fileName := filepath.Base(filePath)
+		fileExt := filepath.Ext(fileName)
+		parentPath := filePath[0 : len(filePath)-len(fileName)]
+		fileName = fileName[0 : len(fileName)-len(fileExt)]
+
+		if strings.HasSuffix(fileName, ".") {
+			fileName = fileName[0 : len(fileName)-1]
+		}
+
+		if ignoreNameCase {
+			fileName = strings.ToLower(fileName)
+		}
+		if ignoreExtCase {
+			fileExt = strings.ToLower(fileExt)
+		}
+
+		if items, readErr := os.ReadDir(parentPath); readErr == nil {
+			for _, item := range items {
+				itemName := item.Name()
+				itemExt := filepath.Ext(itemName)
+				itemName = itemName[0 : len(itemName)-1]
+
+				if ignoreNameCase {
+					itemName = strings.ToLower(itemName)
+				}
+				if ignoreExtCase {
+					itemExt = strings.ToLower(itemExt)
+				}
+
+				if itemName == fileName && itemExt == fileExt {
+					outputFilepath = parentPath + item.Name()
+					exist = true
+					break
+				}
+			}
+		}
+	} else {
+		if _, statErr := os.Stat(filePath); statErr == nil {
+			exist = true
+		}
+	}
+
+	LogfV("output: %s, exist: %t", outputFilepath, exist)
+	return
 }
