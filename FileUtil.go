@@ -473,7 +473,7 @@ func GetRealFilepath(filePath string, ignoreNameCase, ignoreExtCase bool) (outpu
 			for _, item := range items {
 				itemName := item.Name()
 				itemExt := filepath.Ext(itemName)
-				itemName = itemName[0 : len(itemName)-1]
+				itemName = itemName[0 : len(itemName) - len(itemExt)]
 
 				if ignoreNameCase {
 					itemName = strings.ToLower(itemName)
@@ -488,6 +488,8 @@ func GetRealFilepath(filePath string, ignoreNameCase, ignoreExtCase bool) (outpu
 					break
 				}
 			}
+		} else {
+			LogfE("fail to readdir: %s,%v", parentPath, readErr)
 		}
 	} else {
 		if _, statErr := os.Stat(filePath); statErr == nil {
