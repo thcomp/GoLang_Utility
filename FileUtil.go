@@ -469,7 +469,7 @@ func GetRealFilepath(filePath string, ignoreNameCase, ignoreExtCase bool) (outpu
 			fileExt = strings.ToLower(fileExt)
 		}
 
-		if items, readErr := os.ReadDir(parentPath); readErr == nil {
+		if items, readErr := ioutil.ReadDir(parentPath); readErr == nil {
 			for _, item := range items {
 				itemName := item.Name()
 				itemExt := filepath.Ext(itemName)
