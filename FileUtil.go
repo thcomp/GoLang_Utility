@@ -365,29 +365,17 @@ func PrepareOutputFilepath(inputTopFolderpath, inputFilepath, outputTopFolderpat
 
 func Open(filePath string) (*os.File, error) {
 	newFilepath := ExchangePath(filePath)
-	if newFilepath2, exist := GetRealFilepath(newFilepath, false, true); exist {
-		return os.Open(newFilepath2)
-	} else {
-		return os.Open(newFilepath)
-	}
+	return os.Open(newFilepath)
 }
 
 func OpenFile(filePath string, flag int, perm os.FileMode) (*os.File, error) {
 	newFilepath := ExchangePath(filePath)
-	if newFilepath2, exist := GetRealFilepath(newFilepath, false, true); exist {
-		return os.OpenFile(newFilepath2, flag, perm)
-	} else {
-		return os.OpenFile(newFilepath, flag, perm)
-	}
+	return os.OpenFile(newFilepath, flag, perm)
 }
 
 func ReadFile(filePath string) ([]byte, error) {
 	newFilepath := ExchangePath(filePath)
-	if newFilepath2, exist := GetRealFilepath(newFilepath, false, true); exist {
-		return ioutil.ReadFile(newFilepath2)
-	} else {
-		return ioutil.ReadFile(newFilepath)
-	}
+	return ioutil.ReadFile(newFilepath)
 }
 
 func ExchangePath(originalPath string) string {
