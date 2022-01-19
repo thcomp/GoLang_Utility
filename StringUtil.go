@@ -606,6 +606,29 @@ var sNumberToHalfNumber = map[string]string{
 	"９": "9",
 }
 
+var sRomanNumberToHalfNumber = map[string]string{
+	"Ⅰ": "1",
+	"Ⅱ": "2",
+	"Ⅲ": "3",
+	"Ⅳ": "4",
+	"Ⅴ": "5",
+	"Ⅵ": "6",
+	"Ⅶ": "7",
+	"Ⅷ": "8",
+	"Ⅸ": "9",
+	"Ⅹ": "10",
+	"ⅰ": "1",
+	"ⅱ": "2",
+	"ⅲ": "3",
+	"ⅳ": "4",
+	"ⅴ": "5",
+	"ⅵ": "6",
+	"ⅶ": "7",
+	"ⅷ": "8",
+	"ⅸ": "9",
+	"ⅹ": "10",
+}
+
 var sHalfSymbolToSymbol = map[string]string{
 	"!":  "！",
 	"\"": "“",
@@ -654,6 +677,7 @@ var sSymbolToHalfSymbol = map[string]string{
 	"）": ")",
 	"＝": "=",
 	"—": "-",
+	"－": "-",
 	"＾": "^",
 	"～": "~",
 	"｜": "|",
@@ -869,6 +893,16 @@ func ExchangeKanaToHiragana(originalText string) string {
 
 	for kana, hiragana := range sKanaToHiragana {
 		ret = strings.Replace(ret, kana, hiragana, -1)
+	}
+
+	return ret
+}
+
+func ExchangeRomanNumberToHalfNumber(originalText string) string {
+	ret := originalText
+
+	for romanNumber, halfNumber := range sRomanNumberToHalfNumber {
+		ret = strings.Replace(ret, romanNumber, halfNumber, -1)
 	}
 
 	return ret

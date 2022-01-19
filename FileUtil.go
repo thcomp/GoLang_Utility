@@ -461,7 +461,7 @@ func GetRealFilepath(filePath string, ignoreNameCase, ignoreExtCase bool) (outpu
 			for _, item := range items {
 				itemName := item.Name()
 				itemExt := filepath.Ext(itemName)
-				itemName = itemName[0 : len(itemName) - len(itemExt)]
+				itemName = itemName[0 : len(itemName)-len(itemExt)]
 
 				if ignoreNameCase {
 					itemName = strings.ToLower(itemName)

@@ -10,7 +10,7 @@ type InputHandler struct {
 	Handler func(string) bool
 }
 
-func GetUserInput(prefix string, caseSensitive bool, inputHandler InputHandler, otherInputHandlers ...InputHandler) (userInput string, ret bool) {
+func GetUserInput(prefix string, caseSensitive bool, inputHandler *InputHandler, otherInputHandlers ...(*InputHandler)) (userInput string, ret bool) {
 	userInput = ""
 	ret = false
 
@@ -18,24 +18,24 @@ func GetUserInput(prefix string, caseSensitive bool, inputHandler InputHandler, 
 	othersInputHandler := (*InputHandler)(nil)
 
 	if inputHandler.Key == "" {
-		othersInputHandler = &inputHandler
+		othersInputHandler = inputHandler
 	} else {
 		if caseSensitive {
-			targetInputMap[inputHandler.Key] = &inputHandler
+			targetInputMap[inputHandler.Key] = inputHandler
 		} else {
-			targetInputMap[strings.ToLower(inputHandler.Key)] = &inputHandler
+			targetInputMap[strings.ToLower(inputHandler.Key)] = inputHandler
 		}
 	}
 
 	if len(otherInputHandlers) > 0 {
 		for _, otherInputHandler := range otherInputHandlers {
 			if otherInputHandler.Key == "" {
-				othersInputHandler = &otherInputHandler
+				othersInputHandler = otherInputHandler
 			} else {
 				if caseSensitive {
-					targetInputMap[otherInputHandler.Key] = &otherInputHandler
+					targetInputMap[otherInputHandler.Key] = otherInputHandler
 				} else {
-					targetInputMap[strings.ToLower(otherInputHandler.Key)] = &otherInputHandler
+					targetInputMap[strings.ToLower(otherInputHandler.Key)] = otherInputHandler
 				}
 			}
 		}
@@ -50,6 +50,7 @@ func GetUserInput(prefix string, caseSensitive bool, inputHandler InputHandler, 
 				inputText = strings.ToLower(inputText)
 			}
 
+			userInput = inputText
 			if inputHandlerData, exist := targetInputMap[inputText]; exist {
 				ret = inputHandlerData.Handler(inputText)
 			} else {
