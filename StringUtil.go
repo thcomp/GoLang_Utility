@@ -412,6 +412,8 @@ var sHalfKanaToKana = map[string]string{
 	"ﾌﾟ": "プ",
 	"ﾍﾟ": "ペ",
 	"ﾎﾟ": "ポ",
+	"ﾞ":  "゛",
+	"ﾟ":  "゜",
 }
 
 var sNFDtoNFC = map[string]string{
@@ -678,6 +680,7 @@ var sSymbolToHalfSymbol = map[string]string{
 	"＝": "=",
 	"—": "-",
 	"－": "-",
+	"ー": "-",
 	"＾": "^",
 	"～": "~",
 	"｜": "|",
@@ -893,6 +896,16 @@ func ExchangeKanaToHiragana(originalText string) string {
 
 	for kana, hiragana := range sKanaToHiragana {
 		ret = strings.Replace(ret, kana, hiragana, -1)
+	}
+
+	return ret
+}
+
+func ExchangeHiraganaToKana(originalText string) string {
+	ret := originalText
+
+	for kana, hiragana := range sKanaToHiragana {
+		ret = strings.Replace(ret, hiragana, kana, -1)
 	}
 
 	return ret
