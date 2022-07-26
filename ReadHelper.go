@@ -48,9 +48,9 @@ func NewReadHelperFromFile(filePath string) (ret *ReadHelper, retErr error) {
 	return
 }
 
-func (helper *ReadHelper) LineSeparator(lineSeparator *string) string {
-	if lineSeparator != nil && *lineSeparator != "" {
-		helper.lineSeparator = *lineSeparator
+func (helper *ReadHelper) LineSeparator(lineSeparator string) string {
+	if lineSeparator != "" {
+		helper.lineSeparator = lineSeparator
 	}
 
 	return helper.lineSeparator
