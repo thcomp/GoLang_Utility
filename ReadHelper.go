@@ -7,16 +7,22 @@ import (
 	"strings"
 )
 
+const Cr = "\r"
+const Lf = "\n"
+const CrLf = Cr + Lf
+
 type ReadHelper struct {
-	reader      io.Reader
-	readCloser  io.ReadCloser
-	lineBuffer  []string
-	lineBuilder StringBuilder
+	reader        io.Reader
+	readCloser    io.ReadCloser
+	lineBuffer    []string
+	lineBuilder   StringBuilder
+	lineSeparator string
 }
 
 func NewReadHelper(reader io.Reader) *ReadHelper {
 	ret := ReadHelper{
-		reader: reader,
+		reader:        reader,
+		lineSeparator: CrLf,
 	}
 
 	return &ret
@@ -31,14 +37,23 @@ func NewReadHelperFromReadCloser(reader io.ReadCloser) *ReadHelper {
 func NewReadHelperFromFile(filePath string) (ret *ReadHelper, retErr error) {
 	if inFileReader, openErr := os.Open(filePath); openErr == nil {
 		ret = &ReadHelper{
-			reader:     inFileReader,
-			readCloser: inFileReader,
+			reader:        inFileReader,
+			lineSeparator: CrLf,
+			readCloser:    inFileReader,
 		}
 	} else {
 		retErr = openErr
 	}
 
 	return
+}
+
+func (helper *ReadHelper) LineSeparator(lineSeparator *string) string {
+	if lineSeparator != nil && *lineSeparator != "" {
+		helper.lineSeparator = *lineSeparator
+	}
+
+	return helper.lineSeparator
 }
 
 func (helper *ReadHelper) ReadLine() (ret string, retErr error) {
@@ -61,11 +76,11 @@ func (helper *ReadHelper) ReadLine() (ret string, retErr error) {
 				size, readErr := helper.reader.Read(buffer)
 				if size > 0 && readErr == nil {
 					helper.lineBuilder.Append(string(buffer[0:size]))
-					lines, leftText = separateLines(helper.lineBuilder.String())
+					lines, leftText = separateLines(helper.lineBuilder.String(), helper.lineSeparator)
 				} else if readErr == io.EOF {
 					retErr = readErr
 					helper.lineBuilder.Append(string(buffer[0:size]))
-					lines, leftText = separateLines(helper.lineBuilder.String())
+					lines, leftText = separateLines(helper.lineBuilder.String(), helper.lineSeparator)
 					brokenLoop = true
 				} else {
 					LogfE("fail to read: %v", readErr)
@@ -111,16 +126,16 @@ func (helper *ReadHelper) Close() (ret error) {
 	return
 }
 
-func separateLines(buffer string) (lines []string, leftText string) {
-	tempLines := strings.Split(buffer, "\r\n")
+func separateLines(buffer, lineSeparator string) (lines []string, leftText string) {
+	tempLines := strings.Split(buffer, lineSeparator)
 
 	if len(tempLines) == 1 && len(tempLines[0]) == len(buffer) {
-		// not found "\r\n"
+		// not found lineSeparator
 		leftText = buffer
 	} else {
 		for index, tempLine := range tempLines {
 			LogfV("temp line: %s", tempLine)
-			if strings.HasSuffix(buffer, "\r\n") {
+			if strings.HasSuffix(buffer, lineSeparator) {
 				if len(tempLine) > 0 {
 					lines = append(lines, tempLine)
 				}
