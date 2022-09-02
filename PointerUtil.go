@@ -56,6 +56,10 @@ func ToBytePointer(value byte) *byte {
 	return &value
 }
 
+func ToBoolPointer(value bool) *bool {
+	return &value
+}
+
 func ToInt(value *int, defaultValue int) (ret int) {
 	if value != nil {
 		ret = *value
@@ -187,6 +191,16 @@ func ToString(value *string, defaultValue string) (ret string) {
 }
 
 func ToByte(value *byte, defaultValue byte) (ret byte) {
+	if value != nil {
+		ret = *value
+	} else {
+		ret = defaultValue
+	}
+
+	return ret
+}
+
+func ToBool(value *bool, defaultValue bool) (ret bool) {
 	if value != nil {
 		ret = *value
 	} else {
