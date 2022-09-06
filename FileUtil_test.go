@@ -369,3 +369,81 @@ func Test_exchangePath(t *testing.T) {
 		}
 	}
 }
+
+func Test_JoinPath(t *testing.T) {
+	type TestData struct {
+		base      string
+		parts     []string
+		separator string
+		expect    string
+	}
+
+	testDataSlice := []TestData{
+		{
+			base: "test1",
+			parts: []string{
+				"test2",
+			},
+			separator: "/",
+			expect:    "test1/test2",
+		},
+		{
+			base:      "test1",
+			parts:     []string{},
+			separator: "/",
+			expect:    "test1",
+		},
+		{
+			base: "test1",
+			parts: []string{
+				"test2",
+				"test3",
+			},
+			separator: "/",
+			expect:    "test1/test2/test3",
+		},
+		{
+			base: "test1",
+			parts: []string{
+				"/test2",
+				"test3/",
+			},
+			separator: "/",
+			expect:    "test1/test2/test3/",
+		},
+		{
+			base: "test1",
+			parts: []string{
+				"/test2/",
+				"test3/",
+			},
+			separator: "/",
+			expect:    "test1/test2/test3/",
+		},
+		{
+			base: "test1/",
+			parts: []string{
+				"/test2",
+				"test3/",
+			},
+			separator: "/",
+			expect:    "test1/test2/test3/",
+		},
+		{
+			base: "/test1",
+			parts: []string{
+				"/test2/",
+				"/test3/",
+			},
+			separator: "/",
+			expect:    "/test1/test2/test3/",
+		},
+	}
+
+	for index, testData := range testDataSlice {
+		result := JoinPath(testData.base, testData.separator, testData.parts...)
+		if result != testData.expect {
+			t.Fatalf("not matched: %s vs %s, %d, %v", result, testData.expect, index, testData)
+		}
+	}
+}

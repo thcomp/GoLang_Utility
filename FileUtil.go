@@ -488,3 +488,25 @@ func GetRealFilepath(filePath string, ignoreNameCase, ignoreExtCase bool) (outpu
 	LogfV("output: %s, exist: %t", outputFilepath, exist)
 	return
 }
+
+func JoinPath(base string, separator string, parts ...string) string {
+	builder := StringBuilder{}
+	builder.Append(base)
+
+	for _, part := range parts {
+		builtText := builder.String()
+
+		hasSuffix := strings.HasSuffix(builtText, separator)
+		hasPrefix := strings.HasPrefix(part, separator)
+
+		if (hasSuffix && !hasPrefix) || (!hasSuffix && hasPrefix) {
+			builder.Append(part)
+		} else if hasSuffix && hasPrefix {
+			builder.Append(part[len(separator):])
+		} else {
+			builder.Append(separator).Append(part)
+		}
+	}
+
+	return builder.String()
+}
