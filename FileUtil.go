@@ -489,9 +489,14 @@ func GetRealFilepath(filePath string, ignoreNameCase, ignoreExtCase bool) (outpu
 	return
 }
 
-func JoinPath(base string, separator string, parts ...string) string {
+func JoinPath(base string, separator string, part string, otherParts ...string) string {
 	builder := StringBuilder{}
 	builder.Append(base)
+	parts := []string{part}
+
+	if otherParts != nil && len(otherParts) > 0 {
+		parts = append(parts, otherParts...)
+	}
 
 	for _, part := range parts {
 		builtText := builder.String()
