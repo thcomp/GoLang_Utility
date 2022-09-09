@@ -42,7 +42,7 @@ func NewLocalFileCacheEditorFactory(cacehRootFolder string) (ret *LocalFileCache
 	return ret, retErr
 }
 
-func (factory *LocalFileCacheEditorFactory) OpenLocalFileCacheEditor(relPathUnderCacheRoot string, flag int, mode interface{}) (CacheEditor, error) {
+func (factory *LocalFileCacheEditorFactory) OpenCacheEditor(relPathUnderCacheRoot string, flag int, mode interface{}) (CacheEditor, error) {
 	path := JoinPath(factory.cacheRootFolderPath, string(os.PathSeparator), relPathUnderCacheRoot)
 
 	if perm, assertionOK := mode.(os.FileMode); assertionOK {

@@ -11,7 +11,7 @@ import (
 func Test_LocalFileCacheEditor(t *testing.T) {
 	if factory, err := NewLocalFileCacheEditorFactory(fmt.Sprintf(".%scache", string(os.PathSeparator))); err == nil {
 		for i := 0; i < 100; i++ {
-			if editor, openErr := factory.OpenLocalFileCacheEditor(fmt.Sprintf("%d", i), os.O_CREATE|os.O_RDWR, os.FileMode(0600)); openErr == nil {
+			if editor, openErr := factory.OpenCacheEditor(fmt.Sprintf("%d", i), os.O_CREATE|os.O_RDWR, os.FileMode(0600)); openErr == nil {
 				appendText := fmt.Sprintf("%02X", i)
 				textBuilder := StringBuilder{}
 

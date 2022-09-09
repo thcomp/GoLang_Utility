@@ -97,7 +97,7 @@ func NewMultipartHelper(reader io.Reader, boundary string, cacheEditorFactory Ca
 		if tempPart, readErr := multipartReader.NextPart(); readErr == nil {
 			if partBytes, readErr := ioutil.ReadAll(tempPart); readErr == nil {
 				temporaryFilepath := xid.New().String()
-				if cacheEditor, err := ret.cacheEditorFactory.OpenLocalFileCacheEditor(temporaryFilepath, os.O_WRONLY, 0400); err == nil {
+				if cacheEditor, err := ret.cacheEditorFactory.OpenCacheEditor(temporaryFilepath, os.O_WRONLY, 0400); err == nil {
 					if _, writeErr := cacheEditor.Write(partBytes); writeErr == nil {
 						contentDisposition := tempPart.Header.Get("Content-Disposition")
 						fileName := ``

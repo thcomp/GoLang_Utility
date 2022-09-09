@@ -50,7 +50,7 @@ func (factory *MemoryCacheEditorFactory) SetLimitCacheSize(limitCacheSize int64)
 	factory.limitCacheSize = limitCacheSize
 }
 
-func (factory *MemoryCacheEditorFactory) OpenLocalFileCacheEditor(id string, flag int, mode interface{}) (CacheEditor, error) {
+func (factory *MemoryCacheEditorFactory) OpenCacheEditor(id string, flag int, mode interface{}) (CacheEditor, error) {
 	ret := CacheEditor(nil)
 	retErr := error(nil)
 

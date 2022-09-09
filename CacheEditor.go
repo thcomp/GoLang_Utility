@@ -14,5 +14,5 @@ type CacheEditor interface {
 }
 
 type CacheEditorFactory interface {
-	OpenLocalFileCacheEditor(path string, flag int, mode interface{}) (CacheEditor, error)
+	OpenCacheEditor(path string, flag int, mode interface{}) (CacheEditor, error)
 }
