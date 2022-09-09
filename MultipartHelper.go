@@ -128,7 +128,8 @@ func NewMultipartHelper(reader io.Reader, boundary string, cacheEditorFactory Ca
 						}
 
 						ret.formDataMap[formName] = &FormData{
-							mimeType: mimeType,
+							cacheEditor: cacheEditor,
+							mimeType:    mimeType,
 						}
 					} else {
 						retError = writeErr
