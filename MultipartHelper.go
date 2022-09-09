@@ -48,6 +48,10 @@ func (formData *FormData) Part() (ret []byte, retErr error) {
 		}
 	}
 
+	if retErr == nil {
+		ret = buffer.Bytes()
+	}
+
 	return
 }
 
