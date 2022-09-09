@@ -1,6 +1,7 @@
 package utility
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,20 +14,44 @@ import (
 	"github.com/rs/xid"
 )
 
-const c_TemporaryFolderPath = "." +  string(os.PathSeparator) + "multipart_helper" + string(os.PathSeparator)
+const c_TemporaryFolderPath = "." + string(os.PathSeparator) + "multipart_helper" + string(os.PathSeparator)
+
+var sLocalCacheEditorFactory LocalFileCacheEditorFactory = LocalFileCacheEditorFactory{cacheRootFolderPath: c_TemporaryFolderPath}
 
 type FormData struct {
-	temporaryFilepath string
-	originalFilename  string
-	mimeType          string
+	cacheEditor CacheEditor
+	mimeType    string
 }
 
-func (formData *FormData) Part() ([]byte, error) {
-	return ioutil.ReadFile(formData.temporaryFilepath)
+func (formData *FormData) Part() (ret []byte, retErr error) {
+	buffer := bytes.NewBuffer([]byte{})
+	readBuffer := make([]byte, 10*1024)
+
+	for {
+		if readSize, readErr := formData.cacheEditor.Read(readBuffer); readSize > 0 {
+			if _, writeErr := buffer.Write(readBuffer[0:readSize]); writeErr != nil {
+				retErr = writeErr
+				break
+			}
+
+			if readErr == io.EOF {
+				break
+			} else {
+				retErr = readErr
+			}
+		} else if readErr == io.EOF {
+			break
+		} else {
+			retErr = readErr
+			break
+		}
+	}
+
+	return
 }
 
 func (formData *FormData) Filename() string {
-	return formData.originalFilename
+	return formData.cacheEditor.ID()
 }
 
 func (formData *FormData) MimeType() string {
@@ -34,16 +59,21 @@ func (formData *FormData) MimeType() string {
 }
 
 type MultipartHelper struct {
-	formDataMap map[string](*FormData)
+	formDataMap        map[string](*FormData)
+	cacheEditorFactory CacheEditorFactory
 }
 
 func NewMultipartHelperFromHttpRequest(r *http.Request) (*MultipartHelper, error) {
+	return NewMultipartHelperFromHttpRequestWithFactory(r, &sLocalCacheEditorFactory)
+}
+
+func NewMultipartHelperFromHttpRequestWithFactory(r *http.Request, cacheEditorFactory CacheEditorFactory) (*MultipartHelper, error) {
 	ret := (*MultipartHelper)(nil)
 	retErr := error(nil)
 
 	if mediaType, params, parseErr := mime.ParseMediaType(r.Header.Get(`Content-Type`)); parseErr == nil {
 		if strings.HasPrefix(mediaType, `multipart/`) {
-			ret, retErr = NewMultipartHelper(r.Body, params[`boundary`])
+			ret, retErr = NewMultipartHelper(r.Body, params[`boundary`], cacheEditorFactory)
 		} else {
 			retErr = fmt.Errorf("not support type: %s", mediaType)
 		}
@@ -54,62 +84,64 @@ func NewMultipartHelperFromHttpRequest(r *http.Request) (*MultipartHelper, error
 	return ret, retErr
 }
 
-func NewMultipartHelper(reader io.Reader, boundary string) (*MultipartHelper, error) {
-	ret := &MultipartHelper{}
+func NewMultipartHelper(reader io.Reader, boundary string, cacheEditorFactory CacheEditorFactory) (*MultipartHelper, error) {
+	ret := &MultipartHelper{cacheEditorFactory: cacheEditorFactory}
 	retError := error(nil)
 
 	multipartReader := multipart.NewReader(reader, boundary)
 	ret.formDataMap = map[string](*FormData){}
 
-	os.MkdirAll(c_TemporaryFolderPath, 0700)
-
 	sameFormNameIndicateMap := map[string]int{}
 	for {
 		if tempPart, readErr := multipartReader.NextPart(); readErr == nil {
 			if partBytes, readErr := ioutil.ReadAll(tempPart); readErr == nil {
-				temporaryFilepath := c_TemporaryFolderPath + xid.New().String()
-				if writeErr := ioutil.WriteFile(temporaryFilepath, partBytes, 0600); writeErr == nil {
-					contentDisposition := tempPart.Header.Get("Content-Disposition")
-					fileName := ``
-					if len(contentDisposition) > 0 {
-						contentDispositionItemArray := strings.Split(contentDisposition, ";")
-						for _, contentDispositionItem := range contentDispositionItemArray {
-							trimedContentDispositionItem := strings.Trim(contentDispositionItem, " ")
-							lowerTrimedContentDispositionItem := strings.ToLower(trimedContentDispositionItem)
+				temporaryFilepath := xid.New().String()
+				if cacheEditor, err := ret.cacheEditorFactory.OpenLocalFileCacheEditor(temporaryFilepath, os.O_WRONLY, 0400); err == nil {
+					if _, writeErr := cacheEditor.Write(partBytes); writeErr == nil {
+						contentDisposition := tempPart.Header.Get("Content-Disposition")
+						fileName := ``
+						if len(contentDisposition) > 0 {
+							contentDispositionItemArray := strings.Split(contentDisposition, ";")
+							for _, contentDispositionItem := range contentDispositionItemArray {
+								trimedContentDispositionItem := strings.Trim(contentDispositionItem, " ")
+								lowerTrimedContentDispositionItem := strings.ToLower(trimedContentDispositionItem)
 
-							if strings.HasPrefix(lowerTrimedContentDispositionItem, "filename") {
-								fileName = trimedContentDispositionItem[len("filename"):]
-								fileName = strings.Trim(fileName, " ")
-								fileName = strings.Trim(fileName, "=")
-								fileName = strings.Trim(fileName, " ")
-								fileName = strings.Trim(fileName, "\"")
+								if strings.HasPrefix(lowerTrimedContentDispositionItem, "filename") {
+									fileName = trimedContentDispositionItem[len("filename"):]
+									fileName = strings.Trim(fileName, " ")
+									fileName = strings.Trim(fileName, "=")
+									fileName = strings.Trim(fileName, " ")
+									fileName = strings.Trim(fileName, "\"")
+								}
 							}
 						}
-					}
-					mimeType := tempPart.Header.Get("Content-Type")
-					formName := tempPart.FormName()
-					if strings.HasSuffix(formName, "[]") {
-						index := 0
-						index, _ = sameFormNameIndicateMap[formName]
-						index = index + 1
-						sameFormNameIndicateMap[formName] = index
+						mimeType := tempPart.Header.Get("Content-Type")
+						formName := tempPart.FormName()
+						if strings.HasSuffix(formName, "[]") {
+							index := 0
+							index, _ = sameFormNameIndicateMap[formName]
+							index = index + 1
+							sameFormNameIndicateMap[formName] = index
 
-						formName = fmt.Sprintf("%s[%d]", formName[0:len(formName)-len("[]")], index)
-					}
+							formName = fmt.Sprintf("%s[%d]", formName[0:len(formName)-len("[]")], index)
+						}
 
-					ret.formDataMap[formName] = &FormData{
-						temporaryFilepath: temporaryFilepath,
-						originalFilename:  fileName,
-						mimeType:          mimeType,
+						ret.formDataMap[formName] = &FormData{
+							mimeType: mimeType,
+						}
+					} else {
+						retError = writeErr
+						LogfE("fail to write part: %v", retError)
+						break
 					}
 				} else {
-					retError = writeErr
-					LogE(fmt.Sprintf("fail to write part: %s", retError.Error()))
+					retError = err
+					LogfE("fail to write part: %v", retError)
 					break
 				}
 			} else {
 				retError = readErr
-				LogE(fmt.Sprintf("fail to read part: %s", retError.Error()))
+				LogfE("fail to read part: %v", retError)
 				break
 			}
 		} else if readErr == io.EOF {
@@ -117,7 +149,7 @@ func NewMultipartHelper(reader io.Reader, boundary string) (*MultipartHelper, er
 		} else {
 			// error
 			retError = readErr
-			LogE(fmt.Sprintf("fail to get part: %s", retError.Error()))
+			LogfE("fail to get part: %v", retError)
 			break
 		}
 	}
@@ -176,15 +208,10 @@ func (helper *MultipartHelper) Close() error {
 
 	if len(helper.formDataMap) > 0 {
 		for _, formData := range helper.formDataMap {
-			if len(formData.temporaryFilepath) > 0 {
-				if IsExist(formData.temporaryFilepath) {
-					if ret = os.Remove(formData.temporaryFilepath); ret == nil {
-						formData.temporaryFilepath = ""
-					}
-				} else {
-					ret = fmt.Errorf("not found temporary file: %s", formData.temporaryFilepath)
-					formData.temporaryFilepath = ""
-				}
+			if formData.cacheEditor != nil {
+				formData.cacheEditor.Close()
+				formData.cacheEditor.Remove()
+				formData.cacheEditor = nil
 			}
 		}
 	}

@@ -441,7 +441,7 @@ func Test_JoinPath(t *testing.T) {
 	}
 
 	for index, testData := range testDataSlice {
-		result := JoinPath(testData.base, testData.separator, testData.parts...)
+		result := JoinPath(testData.base, testData.separator, testData.parts[0], testData.parts[1:]...)
 		if result != testData.expect {
 			t.Fatalf("not matched: %s vs %s, %d, %v", result, testData.expect, index, testData)
 		}
