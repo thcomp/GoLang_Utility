@@ -27,6 +27,7 @@ func (formData *FormData) Part() (ret []byte, retErr error) {
 	buffer := bytes.NewBuffer([]byte{})
 	readBuffer := make([]byte, 10*1024)
 
+	formData.cacheEditor.Seek(0, io.SeekStart)
 	for {
 		if readSize, readErr := formData.cacheEditor.Read(readBuffer); readSize > 0 {
 			if _, writeErr := buffer.Write(readBuffer[0:readSize]); writeErr != nil {
