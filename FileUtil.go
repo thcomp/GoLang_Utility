@@ -102,6 +102,8 @@ var sExtensionMIMEMap map[string]string = map[string]string{
 	".7z":     "application/x-7z-compressed",
 }
 
+var sMIMEExtensionMap map[string]string
+
 func IsExist(path string) bool {
 	var ret = false
 
@@ -306,6 +308,28 @@ func GetMIMETypeFromExtension(filePath string) string {
 		ret = mime
 	} else {
 		ret = "applicaion/octet-stream"
+	}
+
+	return ret
+}
+
+func GetExtensionFromMIMEType(mimeType string) string {
+	if sMIMEExtensionMap == nil {
+		sMIMEExtensionMap = map[string]string{}
+
+		for key, value := range sExtensionMIMEMap {
+			sMIMEExtensionMap[value] = key
+		}
+	}
+
+	ret := "dat"
+
+	if ext, exist := sMIMEExtensionMap[mimeType]; exist {
+		ret = ext
+	}
+
+	if strings.HasPrefix(ret, ".") {
+		ret = ret[1:]
 	}
 
 	return ret
