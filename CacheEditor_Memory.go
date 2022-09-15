@@ -111,7 +111,7 @@ func (buffer *iMemoryBuffer) Seek(offset int64, whence int) (n int64, err error)
 	}
 
 	currentBufferSize := int64(buffer.buffer.Len())
-	if buffer.offset < 0 || buffer.offset >= currentBufferSize {
+	if buffer.offset < 0 || buffer.offset > currentBufferSize {
 		buffer.offset = currentBufferSize + (buffer.offset % currentBufferSize)
 	}
 
