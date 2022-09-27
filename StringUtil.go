@@ -88,7 +88,7 @@ const endInvalidSpaceStarter = 8
 
 func Split(originalText string, sepTextSlice []string, invalidSpaceStarters ...string) []string {
 	ret := []string{}
-	startPosition := 0
+	separatePositions := []int{}
 	invalidSpaceMap := map[string]int{}
 
 	for index := 0; index < len(originalText); {
@@ -96,7 +96,7 @@ func Split(originalText string, sepTextSlice []string, invalidSpaceStarters ...s
 		matchedInvalidSpaceStarter := false
 
 		for _, invalidSpaceStarter := range invalidSpaceStarters {
-			if index+len(invalidSpaceStarter) < len(originalText) {
+			if index+len(invalidSpaceStarter) <= len(originalText) {
 				if originalText[index:index+len(invalidSpaceStarter)] == invalidSpaceStarter {
 					if _, exist := invalidSpaceMap[invalidSpaceStarter]; exist {
 						delete(invalidSpaceMap, invalidSpaceStarter)
@@ -113,10 +113,10 @@ func Split(originalText string, sepTextSlice []string, invalidSpaceStarters ...s
 
 		if !matchedInvalidSpaceStarter && len(invalidSpaceMap) == 0 {
 			for _, sepText := range sepTextSlice {
-				if index+len(sepText) < len(originalText) {
+				if index+len(sepText) <= len(originalText) {
 					if originalText[index:index+len(sepText)] == sepText {
-						ret = append(ret, originalText[startPosition:index])
-						startPosition = index + len(sepText)
+						separatePositions = append(separatePositions, index)
+						incrementSize = len(sepText)
 						break
 					}
 				}
@@ -126,8 +126,17 @@ func Split(originalText string, sepTextSlice []string, invalidSpaceStarters ...s
 		index += incrementSize
 	}
 
-	if startPosition < len(originalText) {
-		ret = append(ret, originalText[startPosition:])
+	separatePositions = append(separatePositions, len(originalText))
+	startPosition := 0
+
+	for _, position := range separatePositions {
+		ret = append(ret, originalText[startPosition:position])
+		for _, sepText := range sepTextSlice {
+			if strings.HasPrefix(originalText[position:], sepText) {
+				startPosition = position + len(sepText)
+				break
+			}
+		}
 	}
 
 	return ret

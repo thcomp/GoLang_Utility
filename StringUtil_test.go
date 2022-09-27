@@ -145,3 +145,29 @@ func Test_ParseNumber(t *testing.T) {
 		}
 	}
 }
+
+func Test_Split(t *testing.T) {
+	testDataMap := map[string]([]string){
+		`"a",,,`:          []string{`"a"`, "", "", ""},
+		`"a,b,c",,,`:      []string{`"a,b,c"`, "", "", ""},
+		`"あ,い,う",,,`:      []string{`"あ,い,う"`, "", "", ""},
+		`"a,b,c",,,A`:     []string{`"a,b,c"`, "", "", "A"},
+		`"a,b,c",C,B,A`:   []string{`"a,b,c"`, "C", "B", "A"},
+		`"a,b,c",'C,B',A`: []string{`"a,b,c"`, `'C,B'`, "A"},
+	}
+
+	for text, expects := range testDataMap {
+		columns := Split(text, []string{","}, `"`, `'`)
+
+		if len(expects) == len(columns) {
+			for index := range expects {
+				if expects[index] != columns[index] {
+					t.Fatalf("not matched expect value: e%s vs c%s", expects[index], columns[index])
+				}
+			}
+		} else {
+			t.Fatalf("not matched expect value count: %s, e%d vs c%d", text, len(expects), len(columns))
+		}
+
+	}
+}
