@@ -108,6 +108,10 @@ func (helper *ReadHelper) ReadLine() (ret string, retErr error) {
 		if len(helper.lineBuffer) > 0 {
 			ret = helper.lineBuffer[0]
 			helper.lineBuffer = helper.lineBuffer[1:]
+
+			if len(helper.lineBuffer) > 0 && retErr == io.EOF {
+				retErr = nil
+			}
 		}
 	} else {
 		retErr = fmt.Errorf("reader is not set, already closed?")
