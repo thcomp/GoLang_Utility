@@ -1,33 +1,49 @@
 package utility
 
 func IndexRunes(s []rune, subRunes []rune) int {
-	ret := -1
+	ret, _ := subIndexRunes(s, subRunes, 0)
+	return ret
+}
 
-	for i := range s {
+func subIndexRunes(s []rune, subRunes []rune, nest int) (ret int, maxNest int) {
+	ret = -1
+	maxNest = nest
+
+	for i := 0; i < len(s); {
 		if i+len(subRunes) < len(s) {
-			for j := range subRunes {
-				if s[i+j] == subRunes[j] {
-					ret = i + j
+			if s[i] == subRunes[0] {
+				ret = i
 
-					if len(subRunes) > 1 {
-						tempRet := IndexRunes(s[i+j+1:], subRunes[j+1:])
-						if tempRet != 0 {
-							ret = -1
-						}
+				if len(subRunes) > 1 {
+					tempRet, tempMaxNest := subIndexRunes(s[i+1:], subRunes[1:], nest+1)
+					if tempRet != 0 {
+						ret = -1
+						maxNest = tempMaxNest
 					}
 				}
-				break
-			}
 
-			if ret >= 0 {
-				break
+				if nest > 0 {
+					break
+				} else {
+					if ret >= 0 {
+						break
+					} else {
+						i += maxNest
+					}
+				}
+			} else {
+				if nest > 0 {
+					break
+				} else {
+					i++
+				}
 			}
 		} else {
 			break
 		}
 	}
 
-	return ret
+	return ret, maxNest
 }
 
 func LastIndexRunes(s []rune, subRunes []rune) int {
