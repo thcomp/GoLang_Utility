@@ -2,37 +2,65 @@
 package utility
 
 import (
-	"time"
+    "time"
 )
 
 const TzTextAsiaTokyo = "Asia/Tokyo"
 
 type TimeHelper struct {
-	tzLocationAsiaTokyo *time.Location
+    tzLocationAsiaTokyo *time.Location
 }
 
-func (ins *TimeHelper) NowInUTC() (ret time.Time, retErr error) {
-	ret = time.Now().UTC()
-
-	return
-}
+var sInsTimeHelper *TimeHelper
 
 func (ins *TimeHelper) NowInAsiaTokyo() (ret time.Time, retErr error) {
-	if ins.tzLocationAsiaTokyo == nil {
-		if tempTz, loadErr := time.LoadLocation(TzTextAsiaTokyo); loadErr == nil {
-			ins.tzLocationAsiaTokyo = tempTz
-		} else {
-			retErr = loadErr
-		}
-	}
+    if ins.tzLocationAsiaTokyo == nil {
+        if tempTz, loadErr := time.LoadLocation(TzTextAsiaTokyo); loadErr == nil {
+            ins.tzLocationAsiaTokyo = tempTz
+        } else {
+            retErr = loadErr
+        }
+    }
 
-	if ins.tzLocationAsiaTokyo != nil {
-		ret = time.Now().In(ins.tzLocationAsiaTokyo)
-	}
+    if ins.tzLocationAsiaTokyo != nil {
+        ret = time.Now().In(ins.tzLocationAsiaTokyo)
+    }
 
-	return
+    return
+}
+
+func NowInAsiaTokyo() (ret time.Time, retErr error) {
+    if sInsTimeHelper == nil {
+        sInsTimeHelper = &TimeHelper{}
+    }
+
+    return sInsTimeHelper.NowInAsiaTokyo()
 }
 
 func (ins *TimeHelper) NowInJST() (time.Time, error) {
-	return ins.NowInAsiaTokyo()
+    return ins.NowInAsiaTokyo()
 }
+
+func NowInJST() (ret time.Time, retErr error) {
+    if sInsTimeHelper == nil {
+        sInsTimeHelper = &TimeHelper{}
+    }
+
+    return sInsTimeHelper.NowInJST()
+}
+
+func (ins *TimeHelper) NowInUTC() (ret time.Time, retErr error) {
+     ret = time.Now().UTC()
+    
+
+    return
+}
+
+func NowInUTC() (ret time.Time, retErr error) {
+    if sInsTimeHelper == nil {
+        sInsTimeHelper = &TimeHelper{}
+    }
+
+    return sInsTimeHelper.NowInUTC()
+}
+

@@ -11,4 +11,6 @@ type {{.Structure}} struct {
 {{createStructureFields}}
 }
 
+var sIns{{.Structure}} *{{.Structure}}
+
 {{createStructureMethods}}{{end}}

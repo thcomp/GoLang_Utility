@@ -14,3 +14,11 @@ func (ins *{{.Structure}}) NowIn{{.Region}}{{.City}}() (ret time.Time, retErr er
 
     return
 }
+
+func NowIn{{.Region}}{{.City}}() (ret time.Time, retErr error) {
+    if sIns{{.Structure}} == nil {
+        sIns{{.Structure}} = &{{.Structure}}{}
+    }
+
+    return sIns{{.Structure}}.NowIn{{.Region}}{{.City}}()
+}
