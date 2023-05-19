@@ -1,0 +1,1 @@
+const TzText{{.Region}}{{.City}} = "{{.Region}}/{{.City}}"

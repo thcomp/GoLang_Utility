@@ -1,0 +1,1 @@
+    tzLocation{{.Region}}{{.City}} *time.Location

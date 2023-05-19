@@ -1,0 +1,15 @@
+{
+    "Africa": {},
+    "America": {},
+    "Antarctica": {},
+    "Arctic": {},
+	"Asia": {
+		"Tokyo": {"short_name": "JST", "diff": 9}
+	},
+    "Atlantic": {},
+    "Australia": {},
+    "Europe": {},
+    "Indian": {},
+    "Pacific": {},
+    "UTC": {"diff": 0}
+}
