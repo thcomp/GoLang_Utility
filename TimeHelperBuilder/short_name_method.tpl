@@ -21,3 +21,16 @@ func NowIn{{.ShortName}}() (ret time.Time, retErr error) {
 
     return sIns{{.Structure}}.NowIn{{.ShortName}}()
 }
+
+func (ins *{{.Structure}}) In{{.ShortName}}(srcTime time.Time) (time.Time, error) {
+    return ins.In{{.Region}}{{.City}}(srcTime)
+}
+
+func In{{.ShortName}}(srcTime time.Time) (ret time.Time, retErr error) {
+    if sIns{{.Structure}} == nil {
+        sIns{{.Structure}} = &{{.Structure}}{}
+    }
+
+    return sIns{{.Structure}}.In{{.ShortName}}(srcTime)
+}
+
