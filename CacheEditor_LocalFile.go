@@ -57,6 +57,10 @@ func (factory *LocalFileCacheEditorFactory) OpenCacheEditor(relPathUnderCacheRoo
 	}
 }
 
+func (factory *LocalFileCacheEditorFactory) Close() error {
+	return os.RemoveAll(factory.cacheRootFolderPath)
+}
+
 func (file *LocalFileCache) Read(p []byte) (int, error) {
 	return file.localFile.Read(p)
 }

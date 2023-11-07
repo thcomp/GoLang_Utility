@@ -8,6 +8,7 @@ import (
 	"mime"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"os"
 	"strings"
 
@@ -163,6 +164,19 @@ func NewMultipartHelper(reader io.Reader, boundary string, cacheEditorFactory Ca
 	return ret, retError
 }
 
+func NewMultipartWriteHelper(cacheEditorFactory CacheEditorFactory) (ret *MultipartHelper) {
+	ret = &MultipartHelper{
+		formDataMap:        map[string](*FormData){},
+		cacheEditorFactory: cacheEditorFactory,
+	}
+
+	if cacheEditorFactory == nil {
+		ret.cacheEditorFactory = &sLocalCacheEditorFactory
+	}
+
+	return ret
+}
+
 func (helper *MultipartHelper) PartNames() []string {
 	ret := []string{}
 
@@ -210,8 +224,6 @@ func (helper *MultipartHelper) Count() int {
 }
 
 func (helper *MultipartHelper) Close() error {
-	ret := error(nil)
-
 	if len(helper.formDataMap) > 0 {
 		for _, formData := range helper.formDataMap {
 			if formData.cacheEditor != nil {
@@ -222,5 +234,79 @@ func (helper *MultipartHelper) Close() error {
 		}
 	}
 
-	return ret
+	return helper.cacheEditorFactory.Close()
+}
+
+func (helper *MultipartHelper) AppendFormData(formName, mimeType string, data []byte) error {
+	retErr := error(nil)
+	temporaryFilepath := xid.New().String()
+
+	if cacheEditor, err := helper.cacheEditorFactory.OpenCacheEditor(temporaryFilepath, os.O_WRONLY, 0400); err == nil {
+		helper.formDataMap[formName] = &FormData{
+			cacheEditor: cacheEditor,
+			mimeType:    mimeType,
+		}
+	} else {
+		retErr = err
+	}
+
+	return retErr
+}
+
+func (helper *MultipartHelper) Write(writer io.Writer) (retErr error) {
+	multipartWriter := multipart.NewWriter(writer)
+	defer multipartWriter.Close()
+
+	for formName, formData := range helper.formDataMap {
+		formPartWriter := (io.Writer)(nil)
+		if formData.mimeType != "" {
+			header := textproto.MIMEHeader{}
+			header.Add("Content-Type", formData.mimeType)
+			if partWriter, createErr := multipartWriter.CreatePart(header); createErr == nil {
+				tempMultipartWriter := multipart.NewWriter(partWriter)
+				formPartWriter, retErr = tempMultipartWriter.CreateFormField(formName)
+			} else {
+				retErr = createErr
+			}
+		} else {
+			formPartWriter, retErr = multipartWriter.CreateFormField(formName)
+		}
+
+		if formPartWriter == nil {
+			if retErr == nil {
+				retErr = fmt.Errorf("internal server error")
+			}
+			break
+		} else {
+			if partFile, openErr := os.Open(formData.Filename()); openErr == nil {
+				readBuffer := make([]byte, 10*1024)
+
+				for {
+					readSize, readErr := partFile.Read(readBuffer)
+					if readSize > 0 {
+						if _, writeErr := formPartWriter.Write(readBuffer[:readSize]); writeErr != nil {
+							retErr = writeErr
+							break
+						}
+					}
+
+					if readErr == io.EOF {
+						break
+					} else {
+						retErr = readErr
+						break
+					}
+				}
+
+			} else {
+				retErr = openErr
+			}
+		}
+
+		if retErr != nil {
+			break
+		}
+	}
+
+	return retErr
 }

@@ -69,6 +69,17 @@ func (factory *MemoryCacheEditorFactory) OpenCacheEditor(id string, flag int, mo
 	return ret, retErr
 }
 
+func (factory *MemoryCacheEditorFactory) Close() (retErr error) {
+	for _, memoryBuffer := range factory.cacheMap {
+		if tempErr := memoryBuffer.Close(); tempErr != nil {
+			retErr = tempErr
+		}
+	}
+	factory.cacheMap = map[string]*iMemoryBuffer{}
+
+	return retErr
+}
+
 type iController interface {
 	SizeChanged(id string, diffSize int64)
 	IsAppendCache(appendSize int64) bool
