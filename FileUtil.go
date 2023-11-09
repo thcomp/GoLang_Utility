@@ -1,6 +1,8 @@
 package utility
 
 import (
+	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -395,6 +397,23 @@ func Open(filePath string) (*os.File, error) {
 func OpenFile(filePath string, flag int, perm os.FileMode) (*os.File, error) {
 	newFilepath := ExchangePath(filePath)
 	return os.OpenFile(newFilepath, flag, perm)
+}
+
+func SkipUTF8BOM(readseeker io.ReadSeeker) (err error) {
+	if _, seekErr := readseeker.Seek(0, io.SeekStart); seekErr == nil {
+		readBuffer := make([]byte, 3)
+		if _, readErr := readseeker.Read(readBuffer); readErr == nil {
+			if bytes.Equal(readBuffer, []byte{0xEF, 0xBB, 0xBF}) {
+				// UTF-8 BOM, no operation
+			} else {
+				_, err = readseeker.Seek(0, io.SeekStart)
+			}
+		}
+	} else {
+		err = seekErr
+	}
+
+	return err
 }
 
 func ReadFile(filePath string) ([]byte, error) {
