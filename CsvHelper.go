@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strconv"
 )
 
 type CsvReader struct {
@@ -52,17 +53,31 @@ func (reader *CsvReader) DecodeLine(recvr interface{}) error {
 					case reflect.Array, reflect.Slice:
 						reflectHelper.SetOnList(pos, field)
 					case reflect.Struct:
-						if fieldTagName, exist := reader.posFieldNameMap[pos]; exist {
-							if !reflectHelper.SetByTagName("csv", fieldTagName, field) {
-								if !reflectHelper.SetByName(fieldTagName, field) {
-									LogfE("fail to set value on structure: %s, %v", fieldTagName, field)
+						if reader.headerOnFirstLine {
+							if fieldTagName, exist := reader.posFieldNameMap[pos]; exist {
+								if !reflectHelper.SetByTagName("csv", fieldTagName, field) {
+									if !reflectHelper.SetByName(fieldTagName, field) {
+										LogfE("fail to set value on structure: %s, %v", fieldTagName, field)
+									}
 								}
+							}
+						} else {
+							if !reflectHelper.SetByIndex(pos, field) {
+								LogfE("fail to set value on structure: pos: %d, %v", pos, field)
 							}
 						}
 					case reflect.Map:
-						if fieldTagName, exist := reader.posFieldNameMap[pos]; exist {
-							if !reflectHelper.SetOnMap(fieldTagName, field) {
-								LogfE("fail to set value on map: %s, %v", fieldTagName, field)
+						if reader.headerOnFirstLine {
+							if fieldTagName, exist := reader.posFieldNameMap[pos]; exist {
+								if !reflectHelper.SetOnMap(fieldTagName, field) {
+									LogfE("fail to set value on map: %s, %v", fieldTagName, field)
+								}
+							}
+						} else {
+							if !reflectHelper.SetOnMap(pos, field) {
+								if !reflectHelper.SetOnMap(strconv.FormatInt(int64(pos), 10), field) {
+									LogfE("fail to set value on map: pos: %d, %v", pos, field)
+								}
 							}
 						}
 					}

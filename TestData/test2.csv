@@ -1,0 +1,2 @@
+a@b.com,"b@c.com,c@d.com",,"./templates/mail.tmpl","a=1,b=2,c=4"
+"a@b.com,b@c.com","c@d.com","d@e.com,e@f.com","./templates/mail.tmpl","{""a"": 1,""b"":""2"",""c"":4}"
