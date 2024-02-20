@@ -229,6 +229,27 @@ func (this *ReflectHelper) SetByName(name string, value interface{}) bool {
 	return ret
 }
 
+func (this *ReflectHelper) SetByTagName(key string, name string, valueInf interface{}) bool {
+	var ret bool = false
+
+	for i := 0; i < this.NumField(); i++ {
+		tagData := this.Tag(i)
+		if tempName, exist := tagData.Lookup(key); exist {
+			if strings.Compare(name, tempName) == 0 {
+				var tempValue reflect.Value = this.mTargetValue.Field(i).Addr().Elem()
+
+				if tempValue.CanSet() {
+					interfaceHelper := NewInterfaceHelper(tempValue)
+					ret = interfaceHelper.SetWithRoughClassification(valueInf)
+				}
+				break
+			}
+		}
+	}
+
+	return ret
+}
+
 func (this *ReflectHelper) SetByIndex(index int, valueInf interface{}) bool {
 	var ret bool = false
 	var tempValue reflect.Value = this.mTargetValue.Field(index).Addr().Elem()
@@ -243,6 +264,37 @@ func (this *ReflectHelper) SetByIndex(index int, valueInf interface{}) bool {
 			tempValue.Set(v)
 			ret = true
 		}
+	}
+
+	return ret
+}
+
+func (this *ReflectHelper) SetOnList(index int, valueInf interface{}) bool {
+	var ret bool = false
+
+	switch this.mTargetValue.Kind() {
+	case reflect.Array, reflect.Slice:
+		if this.mTargetValue.Len() > index {
+			this.mTargetValue.Index(index).Set(reflect.ValueOf(valueInf))
+			ret = true
+		} else if this.mTargetValue.Len() == index {
+			if this.mTargetValue.Kind() == reflect.Slice {
+				newSlice := reflect.Append(this.mTargetValue, reflect.ValueOf(valueInf))
+				this.mTargetValue.Set(newSlice)
+				ret = true
+			}
+		}
+	}
+
+	return ret
+}
+
+func (this *ReflectHelper) SetOnMap(key interface{}, valueInf interface{}) bool {
+	var ret bool = false
+
+	if this.mTargetValue.Kind() == reflect.Map {
+		this.mTargetValue.SetMapIndex(reflect.ValueOf(key), reflect.ValueOf(valueInf))
+		ret = true
 	}
 
 	return ret

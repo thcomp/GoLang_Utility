@@ -501,3 +501,209 @@ func (helper *InterfaceHelper) Set(from interface{}) bool {
 
 	return ret
 }
+
+func (helper *InterfaceHelper) SetWithRoughClassification(from interface{}) bool {
+	ret := true
+
+	if helper.kind == reflect.Ptr {
+		fromInfHelper := NewInterfaceHelper(from)
+
+		if helper.IsBool() && fromInfHelper.IsBool() {
+			value, _ := fromInfHelper.GetBool()
+			helper.ptrToValue.SetBool(value)
+		} else if helper.IsString() && fromInfHelper.IsString() {
+			value, _ := fromInfHelper.GetString()
+			helper.ptrToValue.SetString(value)
+		} else if helper.IsInt() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.ptrToValue.SetInt(int64(value))
+		} else if helper.IsUint() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.ptrToValue.SetUint(uint64(value))
+		} else if helper.IsFloat() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.ptrToValue.SetFloat(value)
+		} else if helper.IsTime() && fromInfHelper.IsTime() {
+			value, _ := fromInfHelper.GetTime()
+			helper.ptrToValue.Set(reflect.ValueOf(value))
+		} else if helper.IsArrayOrSlice() && fromInfHelper.IsArrayOrSlice() {
+			ret = false
+		} else {
+			ret = false
+		}
+	} else if helper.value.CanSet() {
+		fromInfHelper := NewInterfaceHelper(from)
+
+		if helper.IsBool() && fromInfHelper.IsBool() {
+			value, _ := fromInfHelper.GetBool()
+			helper.value.SetBool(value)
+		} else if helper.IsString() && fromInfHelper.IsString() {
+			value, _ := fromInfHelper.GetString()
+			helper.value.SetString(value)
+		} else if helper.IsInt() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.value.SetInt(int64(value))
+		} else if helper.IsUint() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.value.SetUint(uint64(value))
+		} else if helper.IsFloat() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			helper.value.SetFloat(value)
+		} else if helper.IsTime() && fromInfHelper.IsTime() {
+			value, _ := fromInfHelper.GetTime()
+			helper.value.Set(reflect.ValueOf(value))
+		} else if helper.IsArrayOrSlice() && fromInfHelper.IsArrayOrSlice() {
+			ret = false
+		} else {
+			ret = false
+		}
+	} else {
+		ret = false
+	}
+
+	return ret
+}
+
+func (helper *InterfaceHelper) Equal(from interface{}) bool {
+	ret := true
+
+	if helper.kind == reflect.Ptr {
+		fromInfHelper := NewInterfaceHelper(from)
+
+		if helper.IsBool() && fromInfHelper.IsBool() {
+			value, _ := helper.GetBool()
+			fromValue, _ := fromInfHelper.GetBool()
+			ret = (value == fromValue)
+		} else if helper.IsString() && fromInfHelper.IsString() {
+			value, _ := helper.GetString()
+			fromValue, _ := fromInfHelper.GetString()
+			ret = (value == fromValue)
+		} else if helper.IsInt() && fromInfHelper.IsInt() {
+			value, _ := helper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsUint() && fromInfHelper.IsUint() {
+			value, _ := helper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsFloat() && fromInfHelper.IsFloat() {
+			value, _ := helper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsTime() && fromInfHelper.IsTime() {
+			value, _ := helper.GetTime()
+			fromValue, _ := fromInfHelper.GetTime()
+			ret = value.Equal(fromValue)
+		} else if helper.IsArrayOrSlice() && fromInfHelper.IsArrayOrSlice() {
+			ret = false
+		} else {
+			ret = false
+		}
+	} else {
+		fromInfHelper := NewInterfaceHelper(from)
+
+		if helper.IsBool() && fromInfHelper.IsBool() {
+			value, _ := helper.GetBool()
+			fromValue, _ := fromInfHelper.GetBool()
+			ret = (value == fromValue)
+		} else if helper.IsString() && fromInfHelper.IsString() {
+			value, _ := helper.GetString()
+			fromValue, _ := fromInfHelper.GetString()
+			ret = (value == fromValue)
+		} else if helper.IsInt() && fromInfHelper.IsInt() {
+			value, _ := helper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsUint() && fromInfHelper.IsUint() {
+			value, _ := helper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsFloat() && fromInfHelper.IsFloat() {
+			value, _ := helper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsTime() && fromInfHelper.IsTime() {
+			value, _ := helper.GetTime()
+			fromValue, _ := fromInfHelper.GetTime()
+			ret = value.Equal(fromValue)
+		} else if helper.IsArrayOrSlice() && fromInfHelper.IsArrayOrSlice() {
+			ret = false
+		} else {
+			ret = false
+		}
+	}
+
+	return ret
+}
+
+func (helper *InterfaceHelper) EqualWithRoughClassification(from interface{}) bool {
+	ret := true
+
+	if helper.kind == reflect.Ptr {
+		fromInfHelper := NewInterfaceHelper(from)
+
+		if helper.IsBool() && fromInfHelper.IsBool() {
+			value, _ := helper.GetBool()
+			fromValue, _ := fromInfHelper.GetBool()
+			ret = (value == fromValue)
+		} else if helper.IsString() && fromInfHelper.IsString() {
+			value, _ := helper.GetString()
+			fromValue, _ := fromInfHelper.GetString()
+			ret = (value == fromValue)
+		} else if helper.IsInt() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsUint() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsFloat() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsTime() && fromInfHelper.IsTime() {
+			value, _ := helper.GetTime()
+			fromValue, _ := fromInfHelper.GetTime()
+			ret = value.Equal(fromValue)
+		} else if helper.IsArrayOrSlice() && fromInfHelper.IsArrayOrSlice() {
+			ret = false
+		} else {
+			ret = false
+		}
+	} else {
+		fromInfHelper := NewInterfaceHelper(from)
+
+		if helper.IsBool() && fromInfHelper.IsBool() {
+			value, _ := fromInfHelper.GetBool()
+			fromValue, _ := fromInfHelper.GetBool()
+			ret = (value == fromValue)
+		} else if helper.IsString() && fromInfHelper.IsString() {
+			value, _ := fromInfHelper.GetString()
+			fromValue, _ := fromInfHelper.GetString()
+			ret = (value == fromValue)
+		} else if helper.IsInt() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsUint() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsFloat() && fromInfHelper.IsNumber() {
+			value, _ := fromInfHelper.GetNumber()
+			fromValue, _ := fromInfHelper.GetNumber()
+			ret = (value == fromValue)
+		} else if helper.IsTime() && fromInfHelper.IsTime() {
+			value, _ := fromInfHelper.GetTime()
+			fromValue, _ := fromInfHelper.GetTime()
+			ret = value.Equal(fromValue)
+		} else if helper.IsArrayOrSlice() && fromInfHelper.IsArrayOrSlice() {
+			ret = false
+		} else {
+			ret = false
+		}
+	}
+
+	return ret
+}
