@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/textproto"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/rs/xid"
@@ -253,18 +254,22 @@ func (helper *MultipartHelper) AppendFormData(formName, mimeType string, data []
 	return retErr
 }
 
-func (helper *MultipartHelper) Write(writer io.Writer) (retErr error) {
+func (helper *MultipartHelper) Write(writer io.Writer) (boundary string, retErr error) {
 	multipartWriter := multipart.NewWriter(writer)
 	defer multipartWriter.Close()
 
 	for formName, formData := range helper.formDataMap {
 		formPartWriter := (io.Writer)(nil)
 		if formData.mimeType != "" {
+			quoteEscaper := strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+			formName = quoteEscaper.Replace(formName)
+
 			header := textproto.MIMEHeader{}
-			header.Add("Content-Type", formData.mimeType)
+			header.Set("Content-Type", formData.mimeType)
+			header.Set("Content-Disposition", fmt.Sprintf("form-data; name=\"%s\"; filename=\"%s\"", formName, filepath.Base(formData.Filename())))
+
 			if partWriter, createErr := multipartWriter.CreatePart(header); createErr == nil {
-				tempMultipartWriter := multipart.NewWriter(partWriter)
-				formPartWriter, retErr = tempMultipartWriter.CreateFormField(formName)
+				formPartWriter = partWriter
 			} else {
 				retErr = createErr
 			}
@@ -278,26 +283,10 @@ func (helper *MultipartHelper) Write(writer io.Writer) (retErr error) {
 			}
 			break
 		} else {
-			if partFile, openErr := os.Open(formData.Filename()); openErr == nil {
-				readBuffer := make([]byte, 10*1024)
-
-				for {
-					readSize, readErr := partFile.Read(readBuffer)
-					if readSize > 0 {
-						if _, writeErr := formPartWriter.Write(readBuffer[:readSize]); writeErr != nil {
-							retErr = writeErr
-							break
-						}
-					}
-
-					if readErr == io.EOF {
-						break
-					} else {
-						retErr = readErr
-						break
-					}
+			if partData, openErr := formData.Part(); openErr == nil {
+				if _, writeErr := formPartWriter.Write(partData); writeErr != nil {
+					retErr = writeErr
 				}
-
 			} else {
 				retErr = openErr
 			}
@@ -308,5 +297,5 @@ func (helper *MultipartHelper) Write(writer io.Writer) (retErr error) {
 		}
 	}
 
-	return retErr
+	return multipartWriter.Boundary(), retErr
 }
