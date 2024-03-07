@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 type LoggerIF interface {
@@ -24,6 +25,8 @@ type Logger struct {
 	initialized bool
 	outputFile  string
 	useStdOut   bool
+	outputTime  bool
+	tzText      string
 }
 
 const LogLevelE = 1
@@ -42,21 +45,21 @@ var gLogger Logger
 
 const gDefaultLogLevel = LogLevelW | LogLevelE
 
+func NewLocalLogger() *Logger {
+	return &Logger{}
+}
+
 func LogInit() {
-	if !gLogger.initialized {
-		gLogger.LogLevel = gDefaultLogLevel
-		gLogger.initialized = true
-	}
+	gLogger.logInit()
 }
 
 func GetLogLevel() int {
-	LogInit()
-	return gLogger.LogLevel
+	gLogger.logInit()
+	return gLogger.GetLogLevel()
 }
 
 func ChangeLogLevel(logLevel int) {
-	gLogger.LogLevel = logLevel
-	gLogger.initialized = true
+	gLogger.ChangeLogLevel(logLevel)
 }
 
 func ChangeLogLevelByText(logLevelText string) {
@@ -72,6 +75,10 @@ func ChangeOutput(outputFile string) {
 
 func UseStdout(useStdout bool) {
 	gLogger.UseStdout(useStdout)
+}
+
+func OutputTime(enable bool) {
+	gLogger.OutputTime(enable)
 }
 
 func LogV(content string) {
@@ -278,6 +285,25 @@ func (this *Logger) LogfE(format string, args ...interface{}) {
 }
 
 func (this *Logger) output(format string, args ...interface{}) {
+	if this.outputTime {
+		currentTime, _ := Now(this.tzText)
+		format = "%s: " + format
+		tempArgs := []interface{}{
+			fmt.Sprintf(
+				"%04d-%02d-%02d %02d:%02d:%02d.%03d",
+				currentTime.Year(),
+				currentTime.Month(),
+				currentTime.Day(),
+				currentTime.Hour(),
+				currentTime.Minute(),
+				currentTime.Second(),
+				time.Duration(currentTime.Nanosecond())*time.Millisecond,
+			),
+		}
+		tempArgs = append(tempArgs, args...)
+		args = tempArgs
+	}
+
 	if len(this.outputFile) == 0 {
 		if this.useStdOut {
 			fmt.Printf(format, args...)
@@ -300,4 +326,22 @@ func (this *Logger) ChangeOutput(outputFile string) {
 func (this *Logger) UseStdout(useStdout bool) {
 	this.logInit()
 	this.useStdOut = useStdout
+}
+
+func (this *Logger) OutputTime(enable bool, params ...interface{}) {
+	this.logInit()
+	this.outputTime = enable
+	if this.outputTime {
+		if len(params) > 0 {
+			if tzText, assertionOK := params[0].(string); assertionOK {
+				if IsSupportTimezone(tzText) {
+					this.tzText = tzText
+				} else {
+					this.tzText = "UTC"
+				}
+			}
+		} else {
+			this.tzText = "UTC"
+		}
+	}
 }

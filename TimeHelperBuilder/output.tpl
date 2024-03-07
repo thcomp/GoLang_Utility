@@ -2,6 +2,8 @@
 package {{.Package}}
 
 import (
+    "fmt"
+    "strings"
     "time"
 )
 
@@ -9,8 +11,11 @@ import (
 
 type {{.Structure}} struct {
 {{createStructureFields}}
+    tzTextNowMap map[string](func()(time.Time, error))
 }
 
 var sIns{{.Structure}} *{{.Structure}}
 
-{{createStructureMethods}}{{end}}
+{{createStructureMethods}}
+{{createIsSupportTimezone}}
+{{createNowWithTztext}}{{end}}

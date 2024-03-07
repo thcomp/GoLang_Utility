@@ -23,7 +23,7 @@ func DateIn{{.Region}}{{.City}}(year int, month time.Month, day, hour, min, sec,
     return sIns{{.Structure}}.DateIn{{.Region}}{{.City}}(year, month, day, hour, min, sec, nsec)
 }
 
-func (ins *{{.Structure}}) NowIn{{.Region}}{{.City}}() (ret time.Time, retErr error) {
+func (ins *{{.Structure}}) {{.NowFuncName}}() (ret time.Time, retErr error) {
     {{if eq .City ""}}ret = time.Now().UTC()
     {{ else }}if ins.tzLocation{{.Region}}{{.City}} == nil {
         if tempTz, loadErr := time.LoadLocation(TzText{{.Region}}{{.City}}); loadErr == nil {
@@ -40,7 +40,7 @@ func (ins *{{.Structure}}) NowIn{{.Region}}{{.City}}() (ret time.Time, retErr er
     return
 }
 
-func NowIn{{.Region}}{{.City}}() (ret time.Time, retErr error) {
+func {{.NowFuncName}}() (ret time.Time, retErr error) {
     if sIns{{.Structure}} == nil {
         sIns{{.Structure}} = &{{.Structure}}{}
     }

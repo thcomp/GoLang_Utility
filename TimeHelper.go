@@ -2,6 +2,8 @@
 package utility
 
 import (
+    "fmt"
+    "strings"
     "time"
 )
 
@@ -9,6 +11,7 @@ const TzTextAsiaTokyo = "Asia/Tokyo"
 
 type TimeHelper struct {
     tzLocationAsiaTokyo *time.Location
+    tzTextNowMap map[string](func()(time.Time, error))
 }
 
 var sInsTimeHelper *TimeHelper
@@ -137,14 +140,14 @@ func DateInUTC(year int, month time.Month, day, hour, min, sec, nsec int) (ret t
     return sInsTimeHelper.DateInUTC(year, month, day, hour, min, sec, nsec)
 }
 
-func (ins *TimeHelper) NowInUTC() (ret time.Time, retErr error) {
+func (ins *TimeHelper) NowInAsiaTokyo() (ret time.Time, retErr error) {
     ret = time.Now().UTC()
     
 
     return
 }
 
-func NowInUTC() (ret time.Time, retErr error) {
+func NowInAsiaTokyo() (ret time.Time, retErr error) {
     if sInsTimeHelper == nil {
         sInsTimeHelper = &TimeHelper{}
     }
@@ -167,3 +170,56 @@ func InUTC(srcTime time.Time) (ret time.Time, retErr error) {
     return sInsTimeHelper.InUTC(srcTime)
 }
 
+
+func IsSupportTimezone(timezoneText string) (ret bool) {
+    if sInsTimeHelper == nil {
+        sInsTimeHelper = &TimeHelper{}
+    }
+
+    return sInsTimeHelper.IsSupportTimezone(timezoneText)
+}
+
+func (ins *TimeHelper) IsSupportTimezone(timezoneText string) (ret bool) {
+    supportedRegionCityNames := []string{
+        "asia/tokyo","jst",
+    }
+
+    lowerTimezoneText := strings.ToLower(timezoneText)
+    for _, supportedRegionCityName := range supportedRegionCityNames {
+        if supportedRegionCityName == lowerTimezoneText {
+            ret = true
+            break
+        }
+    }
+
+    return
+}
+
+func (ins *TimeHelper) Now(tzText string) (ret time.Time, retErr error) {
+    ins.createTzTextNowMap()
+
+    lowerTzText := strings.ToLower(tzText)
+    if targetNowFunc,exist := ins.tzTextNowMap[lowerTzText]; exist {
+        ret, retErr = targetNowFunc()
+    } else {
+        retErr = fmt.Errorf("unknown timezone text: %s", tzText)
+    }
+
+    return
+}
+
+func Now(tzText string) (ret time.Time, retErr error) {
+    if sInsTimeHelper == nil {
+        sInsTimeHelper = &TimeHelper{}
+    }
+
+    return sInsTimeHelper.Now(tzText)
+}
+
+func (ins *TimeHelper) createTzTextNowMap() {
+    if ins.tzTextNowMap == nil {
+        ins.tzTextNowMap = map[string](func()(time.Time, error)){
+            "asia/tokyo": NowInAsiaTokyo,"jst": NowInJST,
+        }
+    }
+}
