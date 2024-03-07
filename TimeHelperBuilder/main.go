@@ -156,12 +156,11 @@ func outputStructureMethods(params *Parameter, tzMap map[string]interface{}) str
 	builder := ThcompUtility.StringBuilder{}
 
 	if outputTemplate, parseErr := TextTempl.ParseFiles(params.OutputMethodTemplateFilepath); parseErr == nil {
-		tmplValues := map[string]interface{}{"Structure": params.OutputStructName}
-
 		outputNowFuncNameTemplate, _ := TextTempl.ParseFiles(params.OutputNowFuncNameTemplateFilepath)
 		outputShortNameMethodTemplate, _ := TextTempl.ParseFiles(params.OutputShortNameMethodTemplateFilepath)
 		for region, value := range tzMap {
 			ThcompUtility.LogfD("region: %s, type of value: %v", region, reflect.TypeOf(value))
+			tmplValues := map[string]interface{}{"Structure": params.OutputStructName}
 
 			if mapValue, assertionOK := value.(map[string]interface{}); assertionOK {
 				tempRegion := strings.ToUpper(region[0:1]) + strings.ToLower(region[1:])
