@@ -180,7 +180,7 @@ func outputStructureMethods(params *Parameter, tzMap map[string]interface{}) str
 							}
 
 							buffer = bytes.NewBuffer([]byte{})
-							ThcompUtility.LogfD("city: %s", city)
+							ThcompUtility.LogfD("tmplValues: %v", tmplValues)
 							if execErr := outputTemplate.Execute(buffer, tmplValues); execErr == nil {
 								builder.Appendf("%s\n", buffer.String())
 							} else {
@@ -207,12 +207,20 @@ func outputStructureMethods(params *Parameter, tzMap map[string]interface{}) str
 							// only region, no output(ex. UTC)
 							tmplValues["Region"] = region
 							tmplValues["City"] = ""
+
 							buffer := bytes.NewBuffer([]byte{})
-							ThcompUtility.LogfD("city: %s", "")
+							if execErr := outputNowFuncNameTemplate.Execute(buffer, tmplValues); execErr == nil {
+								tmplValues["NowFuncName"] = buffer.String()
+							} else {
+								ThcompUtility.LogfE("fail to execute template: %s, %v", params.OutputNowFuncNameTemplateFilepath, execErr)
+							}
+
+							buffer = bytes.NewBuffer([]byte{})
+							ThcompUtility.LogfD("tmplValues: %v", tmplValues)
 							if execErr := outputTemplate.Execute(buffer, tmplValues); execErr == nil {
 								builder.Appendf("%s\n", buffer.String())
 							} else {
-								ThcompUtility.LogfE("fail to execute template: %s, %v", params, outputTimezoneText, execErr)
+								ThcompUtility.LogfE("fail to execute template: %s, %v", params.OutputFilepath, execErr)
 							}
 						}
 					}

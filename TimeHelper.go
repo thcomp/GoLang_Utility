@@ -2,224 +2,219 @@
 package utility
 
 import (
-    "fmt"
-    "strings"
-    "time"
+	"fmt"
+	"strings"
+	"time"
 )
 
 const TzTextAsiaTokyo = "Asia/Tokyo"
 
 type TimeHelper struct {
-    tzLocationAsiaTokyo *time.Location
-    tzTextNowMap map[string](func()(time.Time, error))
+	tzLocationAsiaTokyo *time.Location
+	tzTextNowMap        map[string](func() (time.Time, error))
 }
 
 var sInsTimeHelper *TimeHelper
 
-func (ins *TimeHelper) DateInUTC(year int, month time.Month, day, hour, min, sec, nsec int) (ret time.Time, retErr error) {
-    ret = time.Date(year, month, day, hour, min, sec, nsec, time.UTC)
-    
-
-    return
-}
-
-func DateInUTC(year int, month time.Month, day, hour, min, sec, nsec int) (ret time.Time, retErr error) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
-
-    return sInsTimeHelper.DateInUTC(year, month, day, hour, min, sec, nsec)
-}
-
-func (ins *TimeHelper) <no value>() (ret time.Time, retErr error) {
-    ret = time.Now().UTC()
-    
-
-    return
-}
-
-func <no value>() (ret time.Time, retErr error) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
-
-    return sInsTimeHelper.NowInUTC()
-}
-
-func (ins *TimeHelper) InUTC(srcTime time.Time) (ret time.Time, retErr error) {
-    ret = srcTime.UTC()
-    
-
-    return
-}
-
-func InUTC(srcTime time.Time) (ret time.Time, retErr error) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
-
-    return sInsTimeHelper.InUTC(srcTime)
-}
-
 func (ins *TimeHelper) DateInAsiaTokyo(year int, month time.Month, day, hour, min, sec, nsec int) (ret time.Time, retErr error) {
-    if ins.tzLocationAsiaTokyo == nil {
-        if tempTz, loadErr := time.LoadLocation(TzTextAsiaTokyo); loadErr == nil {
-            ins.tzLocationAsiaTokyo = tempTz
-        } else {
-            retErr = loadErr
-        }
-    }
+	if ins.tzLocationAsiaTokyo == nil {
+		if tempTz, loadErr := time.LoadLocation(TzTextAsiaTokyo); loadErr == nil {
+			ins.tzLocationAsiaTokyo = tempTz
+		} else {
+			retErr = loadErr
+		}
+	}
 
-    if ins.tzLocationAsiaTokyo != nil {
-        ret = time.Date(year, month, day, hour, min, sec, nsec, ins.tzLocationAsiaTokyo)
-    }
+	if ins.tzLocationAsiaTokyo != nil {
+		ret = time.Date(year, month, day, hour, min, sec, nsec, ins.tzLocationAsiaTokyo)
+	}
 
-    return
+	return
 }
 
 func DateInAsiaTokyo(year int, month time.Month, day, hour, min, sec, nsec int) (ret time.Time, retErr error) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
 
-    return sInsTimeHelper.DateInAsiaTokyo(year, month, day, hour, min, sec, nsec)
+	return sInsTimeHelper.DateInAsiaTokyo(year, month, day, hour, min, sec, nsec)
 }
 
 func (ins *TimeHelper) NowInAsiaTokyo() (ret time.Time, retErr error) {
-    if ins.tzLocationAsiaTokyo == nil {
-        if tempTz, loadErr := time.LoadLocation(TzTextAsiaTokyo); loadErr == nil {
-            ins.tzLocationAsiaTokyo = tempTz
-        } else {
-            retErr = loadErr
-        }
-    }
+	if ins.tzLocationAsiaTokyo == nil {
+		if tempTz, loadErr := time.LoadLocation(TzTextAsiaTokyo); loadErr == nil {
+			ins.tzLocationAsiaTokyo = tempTz
+		} else {
+			retErr = loadErr
+		}
+	}
 
-    if ins.tzLocationAsiaTokyo != nil {
-        ret = time.Now().In(ins.tzLocationAsiaTokyo)
-    }
+	if ins.tzLocationAsiaTokyo != nil {
+		ret = time.Now().In(ins.tzLocationAsiaTokyo)
+	}
 
-    return
+	return
 }
 
 func NowInAsiaTokyo() (ret time.Time, retErr error) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
 
-    return sInsTimeHelper.NowInAsiaTokyo()
+	return sInsTimeHelper.NowInAsiaTokyo()
 }
 
 func (ins *TimeHelper) InAsiaTokyo(srcTime time.Time) (ret time.Time, retErr error) {
-    if ins.tzLocationAsiaTokyo == nil {
-        if tempTz, loadErr := time.LoadLocation(TzTextAsiaTokyo); loadErr == nil {
-            ins.tzLocationAsiaTokyo = tempTz
-        } else {
-            retErr = loadErr
-        }
-    }
+	if ins.tzLocationAsiaTokyo == nil {
+		if tempTz, loadErr := time.LoadLocation(TzTextAsiaTokyo); loadErr == nil {
+			ins.tzLocationAsiaTokyo = tempTz
+		} else {
+			retErr = loadErr
+		}
+	}
 
-    if ins.tzLocationAsiaTokyo != nil {
-        ret = srcTime.In(ins.tzLocationAsiaTokyo)
-    }
+	if ins.tzLocationAsiaTokyo != nil {
+		ret = srcTime.In(ins.tzLocationAsiaTokyo)
+	}
 
-    return
+	return
 }
 
 func InAsiaTokyo(srcTime time.Time) (ret time.Time, retErr error) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
 
-    return sInsTimeHelper.InAsiaTokyo(srcTime)
+	return sInsTimeHelper.InAsiaTokyo(srcTime)
 }
 
 func (ins *TimeHelper) DateInJST(year int, month time.Month, day, hour, min, sec, nsec int) (time.Time, error) {
-    return ins.DateInAsiaTokyo(year, month, day, hour, min, sec, nsec)
+	return ins.DateInAsiaTokyo(year, month, day, hour, min, sec, nsec)
 }
 
 func DateInJST(year int, month time.Month, day, hour, min, sec, nsec int) (ret time.Time, retErr error) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
 
-    return sInsTimeHelper.DateInJST(year, month, day, hour, min, sec, nsec)
+	return sInsTimeHelper.DateInJST(year, month, day, hour, min, sec, nsec)
 }
 
 func (ins *TimeHelper) NowInJST() (time.Time, error) {
-    return ins.NowInAsiaTokyo()
+	return ins.NowInAsiaTokyo()
 }
 
 func NowInJST() (ret time.Time, retErr error) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
 
-    return sInsTimeHelper.NowInJST()
+	return sInsTimeHelper.NowInJST()
 }
 
 func (ins *TimeHelper) InJST(srcTime time.Time) (time.Time, error) {
-    return ins.InAsiaTokyo(srcTime)
+	return ins.InAsiaTokyo(srcTime)
 }
 
 func InJST(srcTime time.Time) (ret time.Time, retErr error) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
 
-    return sInsTimeHelper.InJST(srcTime)
+	return sInsTimeHelper.InJST(srcTime)
 }
 
+func (ins *TimeHelper) DateInUTC(year int, month time.Month, day, hour, min, sec, nsec int) (ret time.Time, retErr error) {
+	ret = time.Date(year, month, day, hour, min, sec, nsec, time.UTC)
 
+	return
+}
+
+func DateInUTC(year int, month time.Month, day, hour, min, sec, nsec int) (ret time.Time, retErr error) {
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
+
+	return sInsTimeHelper.DateInUTC(year, month, day, hour, min, sec, nsec)
+}
+
+func (ins *TimeHelper) NowInUTC() (ret time.Time, retErr error) {
+	ret = time.Now().UTC()
+
+	return
+}
+
+func NowInUTC() (ret time.Time, retErr error) {
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
+
+	return sInsTimeHelper.NowInUTC()
+}
+
+func (ins *TimeHelper) InUTC(srcTime time.Time) (ret time.Time, retErr error) {
+	ret = srcTime.UTC()
+
+	return
+}
+
+func InUTC(srcTime time.Time) (ret time.Time, retErr error) {
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
+
+	return sInsTimeHelper.InUTC(srcTime)
+}
 
 func IsSupportTimezone(timezoneText string) (ret bool) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
 
-    return sInsTimeHelper.IsSupportTimezone(timezoneText)
+	return sInsTimeHelper.IsSupportTimezone(timezoneText)
 }
 
 func (ins *TimeHelper) IsSupportTimezone(timezoneText string) (ret bool) {
-    supportedRegionCityNames := []string{
-        "asia/tokyo","jst",
-    }
+	supportedRegionCityNames := []string{
+		"asia/tokyo", "jst",
+	}
 
-    lowerTimezoneText := strings.ToLower(timezoneText)
-    for _, supportedRegionCityName := range supportedRegionCityNames {
-        if supportedRegionCityName == lowerTimezoneText {
-            ret = true
-            break
-        }
-    }
+	lowerTimezoneText := strings.ToLower(timezoneText)
+	for _, supportedRegionCityName := range supportedRegionCityNames {
+		if supportedRegionCityName == lowerTimezoneText {
+			ret = true
+			break
+		}
+	}
 
-    return
+	return
 }
 
 func (ins *TimeHelper) Now(tzText string) (ret time.Time, retErr error) {
-    ins.createTzTextNowMap()
+	ins.createTzTextNowMap()
 
-    lowerTzText := strings.ToLower(tzText)
-    if targetNowFunc,exist := ins.tzTextNowMap[lowerTzText]; exist {
-        ret, retErr = targetNowFunc()
-    } else {
-        retErr = fmt.Errorf("unknown timezone text: %s", tzText)
-    }
+	lowerTzText := strings.ToLower(tzText)
+	if targetNowFunc, exist := ins.tzTextNowMap[lowerTzText]; exist {
+		ret, retErr = targetNowFunc()
+	} else {
+		retErr = fmt.Errorf("unknown timezone text: %s", tzText)
+	}
 
-    return
+	return
 }
 
 func Now(tzText string) (ret time.Time, retErr error) {
-    if sInsTimeHelper == nil {
-        sInsTimeHelper = &TimeHelper{}
-    }
+	if sInsTimeHelper == nil {
+		sInsTimeHelper = &TimeHelper{}
+	}
 
-    return sInsTimeHelper.Now(tzText)
+	return sInsTimeHelper.Now(tzText)
 }
 
 func (ins *TimeHelper) createTzTextNowMap() {
-    if ins.tzTextNowMap == nil {
-        ins.tzTextNowMap = map[string](func()(time.Time, error)){
-            "asia/tokyo": NowInAsiaTokyo,"jst": NowInJST,
-        }
-    }
+	if ins.tzTextNowMap == nil {
+		ins.tzTextNowMap = map[string](func() (time.Time, error)){
+			"asia/tokyo": NowInAsiaTokyo, "jst": NowInJST,
+		}
+	}
 }
