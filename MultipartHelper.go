@@ -249,9 +249,11 @@ func (helper *MultipartHelper) AppendFormData(formName, mimeType string, data []
 	temporaryFilepath := xid.New().String()
 
 	if cacheEditor, err := helper.cacheEditorFactory.OpenCacheEditor(temporaryFilepath, os.O_WRONLY, 0400); err == nil {
-		helper.formDataMap[formName] = &FormData{
-			cacheEditor: cacheEditor,
-			mimeType:    mimeType,
+		if _, retErr = cacheEditor.Write(data); retErr == nil {
+			helper.formDataMap[formName] = &FormData{
+				cacheEditor: cacheEditor,
+				mimeType:    mimeType,
+			}
 		}
 	} else {
 		retErr = err
