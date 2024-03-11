@@ -18,7 +18,7 @@ import (
 
 const c_TemporaryFolderPath = "." + string(os.PathSeparator) + "multipart_helper" + string(os.PathSeparator)
 
-var sLocalCacheEditorFactory LocalFileCacheEditorFactory = LocalFileCacheEditorFactory{cacheRootFolderPath: c_TemporaryFolderPath}
+var sLocalCacheEditorFactory *LocalFileCacheEditorFactory = nil
 
 type FormData struct {
 	cacheEditor CacheEditor
@@ -71,7 +71,10 @@ type MultipartHelper struct {
 }
 
 func NewMultipartHelperFromHttpRequest(r *http.Request) (*MultipartHelper, error) {
-	return NewMultipartHelperFromHttpRequestWithFactory(r, &sLocalCacheEditorFactory)
+	if sLocalCacheEditorFactory == nil {
+		sLocalCacheEditorFactory, _ = NewLocalFileCacheEditorFactory(c_TemporaryFolderPath)
+	}
+	return NewMultipartHelperFromHttpRequestWithFactory(r, sLocalCacheEditorFactory)
 }
 
 func NewMultipartHelperFromHttpRequestWithFactory(r *http.Request, cacheEditorFactory CacheEditorFactory) (*MultipartHelper, error) {
@@ -172,7 +175,10 @@ func NewMultipartWriteHelper(cacheEditorFactory CacheEditorFactory) (ret *Multip
 	}
 
 	if cacheEditorFactory == nil {
-		ret.cacheEditorFactory = &sLocalCacheEditorFactory
+		if sLocalCacheEditorFactory == nil {
+			sLocalCacheEditorFactory, _ = NewLocalFileCacheEditorFactory(c_TemporaryFolderPath)
+		}
+		ret.cacheEditorFactory = sLocalCacheEditorFactory
 	}
 
 	return ret
