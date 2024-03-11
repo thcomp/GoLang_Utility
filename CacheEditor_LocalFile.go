@@ -47,7 +47,7 @@ func (factory *LocalFileCacheEditorFactory) OpenCacheEditor(relPathUnderCacheRoo
 	infHelper := NewInterfaceHelper(mode)
 	if modeNum, getRet := infHelper.GetNumber(); getRet {
 		perm := os.FileMode(modeNum)
-		localFile, openErr := os.OpenFile(path, os.O_CREATE|os.O_RDWR|flag, perm)
+		localFile, openErr := os.OpenFile(path, os.O_CREATE|os.O_RDWR, perm)
 		if openErr == nil {
 			return &LocalFileCache{localFilePath: path, localFile: localFile}, nil
 		} else {
