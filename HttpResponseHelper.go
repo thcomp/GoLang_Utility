@@ -12,16 +12,23 @@ type HttpResponseHelper struct {
 
 func NewHttpResponseHelper(params ...interface{}) *HttpResponseHelper {
 	httpRes := (*http.Response)(nil)
+	httpReq := (*http.Request)(nil)
+
 	if len(params) > 0 {
 		for _, param := range params {
 			if tempHttpRes, assertionOK := param.(*http.Response); assertionOK {
 				httpRes = tempHttpRes
+			} else if tempHttpReq, assertionOK := param.(*http.Request); assertionOK {
+				httpReq = tempHttpReq
 			}
 		}
 	}
 
 	if httpRes == nil {
-		httpRes = &http.Response{}
+		httpRes = &http.Response{
+			Header:  http.Header{},
+			Request: httpReq,
+		}
 	}
 
 	return &HttpResponseHelper{
