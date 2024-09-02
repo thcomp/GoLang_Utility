@@ -58,6 +58,8 @@ func (res *HttpResponseHelper) Status(status string) {
 }
 
 func (res *HttpResponseHelper) ExportHttpResponse() *http.Response {
-	res.httpRes.Body = NewNopCloser(bytes.NewReader(res.resEntity.Bytes()))
+	if res.resEntity != nil {
+		res.httpRes.Body = NewNopCloser(bytes.NewReader(res.resEntity.Bytes()))
+	}
 	return res.httpRes
 }
