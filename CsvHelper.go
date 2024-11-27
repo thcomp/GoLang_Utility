@@ -92,3 +92,21 @@ func (reader *CsvReader) DecodeLine(recvr interface{}) error {
 
 	return retErr
 }
+
+func (reader *CsvReader) ColumnsPositions() (sortedColumns []string, ret bool) {
+	ret = false
+
+	if reader.headerOnFirstLine {
+		sortedColumns = make([]string, len(reader.posFieldNameMap))
+
+		for pos, columnName := range reader.posFieldNameMap {
+			if pos < len(sortedColumns) {
+				sortedColumns[pos] = columnName
+			}
+		}
+
+		ret = true
+	}
+
+	return sortedColumns, ret
+}
